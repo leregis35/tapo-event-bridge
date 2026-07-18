@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from .runtime import TapoEventBridgeRuntime
 
 
-ValueFunction = Callable[[TapoEventBridgeRuntime], Any]
+ValueFunction = Callable[["TapoEventBridgeRuntime"], Any]
 
 
 class BridgeSensor(TapoEventBridgeEntity, SensorEntity):
