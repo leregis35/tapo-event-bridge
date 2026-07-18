@@ -1,0 +1,70 @@
+"""Action buttons for Tapo Event Bridge."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from homeassistant.components.button import ButtonEntity
+from homeassistant.const import EntityCategory
+
+from .discovery import async_discover_cameras
+from .entity import TapoEventBridgeEntity
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+
+    from . import TapoEventBridgeConfigEntry
+    from .runtime import TapoEventBridgeRuntime
+
+
+class RediscoverCamerasButton(TapoEventBridgeEntity, ButtonEntity):
+    """Refresh the registry-only camera inventory on demand."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_translation_key = "rediscover_cameras"
+
+    async def async_press(self) -> None:
+        """Read Home Assistant registries once without camera polling."""
+        self._runtime.status = "discovering"
+        self._runtime.replace_cameras(await async_discover_cameras(self.hass))
+
+
+class ReplayLastEventButton(TapoEventBridgeEntity, ButtonEntity):
+    """Replay the newest original event through the normalized pipeline."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_translation_key = "replay_last_event"
+
+    @property
+    def available(self) -> bool:
+        """Return true when at least one original event can be replayed."""
+        return self._runtime.recorded_event_count > 0
+
+    async def async_press(self) -> None:
+        """Replay the newest non-replay event."""
+        await self._runtime.replay_last_event()
+
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: TapoEventBridgeConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
+    """Set up bridge action buttons."""
+    runtime: TapoEventBridgeRuntime = entry.runtime_data
+    entry_id = entry.entry_id
+    async_add_entities(
+        (
+            RediscoverCamerasButton(
+                runtime,
+                entry_id,
+                "rediscover_cameras",
+            ),
+            ReplayLastEventButton(
+                runtime,
+                entry_id,
+                "replay_last_event",
+            ),
+        )
+    )

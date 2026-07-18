@@ -1,6 +1,6 @@
 [project]
 name = "tapo-event-bridge"
-version = "0.1.0"
+version = "0.4.0"
 description = "Home Assistant integration providing reliable Tapo camera events."
 readme = "README.md"
 requires-python = ">=3.13"
@@ -22,3 +22,4 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]

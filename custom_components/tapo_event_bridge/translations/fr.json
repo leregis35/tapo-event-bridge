@@ -4,11 +4,30 @@
     "step": {
       "user": {
         "title": "Configurer Tapo Event Bridge",
-        "description": "Crée l’entrée de l’intégration. La découverte des caméras et les transports d’événements seront ajoutés lors des prochaines étapes."
+        "description": "Crée l'intégration. Les caméras Tapo déjà enregistrées dans Home Assistant sont découvertes une fois au démarrage, sans interrogation réseau."
       }
     },
     "abort": {
       "already_configured": "Tapo Event Bridge est déjà configuré."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": {"name": "État"},
+      "camera_count": {"name": "Nombre de caméras"},
+      "recorded_event_count": {"name": "Nombre d'événements enregistrés"},
+      "active_transports": {"name": "Transports actifs"},
+      "last_event": {"name": "Dernier événement"},
+      "last_event_source": {"name": "Source du dernier événement"},
+      "last_event_latency": {"name": "Latence du dernier événement"}
+    },
+    "binary_sensor": {
+      "healthy": {"name": "Fonctionnement normal"},
+      "cameras_discovered": {"name": "Caméras découvertes"}
+    },
+    "button": {
+      "rediscover_cameras": {"name": "Redécouvrir les caméras"},
+      "replay_last_event": {"name": "Rejouer le dernier événement"}
     }
   }
 }

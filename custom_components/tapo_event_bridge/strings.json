@@ -4,11 +4,30 @@
     "step": {
       "user": {
         "title": "Set up Tapo Event Bridge",
-        "description": "Create the integration entry. Camera discovery and event transports will be added in the next development milestones."
+        "description": "Create the integration entry. Tapo cameras already registered in Home Assistant are discovered once at startup without network polling."
       }
     },
     "abort": {
       "already_configured": "Tapo Event Bridge is already configured."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": {"name": "Status"},
+      "camera_count": {"name": "Camera count"},
+      "recorded_event_count": {"name": "Recorded event count"},
+      "active_transports": {"name": "Active transports"},
+      "last_event": {"name": "Last event"},
+      "last_event_source": {"name": "Last event source"},
+      "last_event_latency": {"name": "Last event latency"}
+    },
+    "binary_sensor": {
+      "healthy": {"name": "Healthy"},
+      "cameras_discovered": {"name": "Cameras discovered"}
+    },
+    "button": {
+      "rediscover_cameras": {"name": "Rediscover cameras"},
+      "replay_last_event": {"name": "Replay last event"}
     }
   }
 }
