@@ -1,0 +1,14 @@
+{
+  "title": "Tapo Event Bridge",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up Tapo Event Bridge",
+        "description": "Create the integration entry. Camera discovery and event transports will be added in the next development milestones."
+      }
+    },
+    "abort": {
+      "already_configured": "Tapo Event Bridge is already configured."
+    }
+  }
+}

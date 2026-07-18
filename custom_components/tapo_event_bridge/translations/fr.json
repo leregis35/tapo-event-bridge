@@ -1,0 +1,14 @@
+{
+  "title": "Tapo Event Bridge",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configurer Tapo Event Bridge",
+        "description": "Crée l’entrée de l’intégration. La découverte des caméras et les transports d’événements seront ajoutés lors des prochaines étapes."
+      }
+    },
+    "abort": {
+      "already_configured": "Tapo Event Bridge est déjà configuré."
+    }
+  }
+}
