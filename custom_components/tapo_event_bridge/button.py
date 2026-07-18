@@ -26,8 +26,13 @@ class RediscoverCamerasButton(TapoEventBridgeEntity, ButtonEntity):
 
     async def async_press(self) -> None:
         """Read Home Assistant registries once without camera polling."""
-        self._runtime.status = "discovering"
-        self._runtime.replace_cameras(await async_discover_cameras(self.hass))
+        self._runtime.begin_discovery()
+        try:
+            cameras = await async_discover_cameras(self.hass)
+        except Exception as error:
+            self._runtime.fail_discovery(error)
+            raise
+        self._runtime.complete_discovery(cameras)
 
 
 class ReplayLastEventButton(TapoEventBridgeEntity, ButtonEntity):

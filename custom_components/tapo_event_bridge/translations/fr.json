@@ -13,21 +13,58 @@
   },
   "entity": {
     "sensor": {
-      "status": {"name": "État"},
-      "camera_count": {"name": "Nombre de caméras"},
-      "recorded_event_count": {"name": "Nombre d'événements enregistrés"},
-      "active_transports": {"name": "Transports actifs"},
-      "last_event": {"name": "Dernier événement"},
-      "last_event_source": {"name": "Source du dernier événement"},
-      "last_event_latency": {"name": "Latence du dernier événement"}
+      "status": {
+        "name": "État"
+      },
+      "camera_count": {
+        "name": "Nombre de caméras"
+      },
+      "recorded_event_count": {
+        "name": "Nombre d'événements enregistrés"
+      },
+      "active_transports": {
+        "name": "Transports actifs"
+      },
+      "last_event": {
+        "name": "Dernier événement"
+      },
+      "last_event_source": {
+        "name": "Source du dernier événement"
+      },
+      "last_event_latency": {
+        "name": "Latence du dernier événement"
+      },
+      "entity_count": {
+        "name": "Nombre d'entités"
+      },
+      "capability_count": {
+        "name": "Nombre de capacités"
+      },
+      "health_score": {
+        "name": "Score de santé"
+      },
+      "last_discovery": {
+        "name": "Dernière analyse"
+      },
+      "discovery_duration": {
+        "name": "Durée de l'analyse"
+      }
     },
     "binary_sensor": {
-      "healthy": {"name": "Fonctionnement normal"},
-      "cameras_discovered": {"name": "Caméras découvertes"}
+      "healthy": {
+        "name": "Fonctionnement normal"
+      },
+      "cameras_discovered": {
+        "name": "Caméras découvertes"
+      }
     },
     "button": {
-      "rediscover_cameras": {"name": "Redécouvrir les caméras"},
-      "replay_last_event": {"name": "Rejouer le dernier événement"}
+      "rediscover_cameras": {
+        "name": "Redécouvrir les caméras"
+      },
+      "replay_last_event": {
+        "name": "Rejouer le dernier événement"
+      }
     }
   }
 }

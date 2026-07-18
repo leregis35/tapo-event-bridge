@@ -31,7 +31,13 @@ async def async_setup_entry(
             hass.bus.async_fire(EVENT_CAMERA, event.as_dict())
 
     runtime.add_cleanup_callback(runtime.event_engine.subscribe(forward_event))
-    runtime.replace_cameras(await async_discover_cameras(hass))
+    runtime.begin_discovery()
+    try:
+        cameras = await async_discover_cameras(hass)
+    except Exception as error:
+        runtime.fail_discovery(error)
+        raise
+    runtime.complete_discovery(cameras)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 

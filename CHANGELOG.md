@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0 - Real Discovery
+
+- Added live camera inventory attributes to the camera-count sensor.
+- Added observed entity, capability, health, scan-time, and scan-duration sensors.
+- Added per-camera entity-domain counts and enabled/disabled totals.
+- Added discovery timing and error state to diagnostics export schema 2.
+- Kept discovery registry-only: no network polling and no battery-camera wake-up.
+- Included the Home Assistant runtime type-alias startup fix.
+
 ## 0.4.0 - Sprint 5 Home Assistant entities
 
 - Forward the config entry to native sensor, binary sensor, and button platforms.

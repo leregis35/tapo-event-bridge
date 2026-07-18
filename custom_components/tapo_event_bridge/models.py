@@ -74,6 +74,9 @@ class CameraDiagnostic:
     onvif: DiagnosticFact = field(default_factory=DiagnosticFact)
     capabilities: dict[str, DiagnosticFact] = field(default_factory=dict)
     entity_count: int = 0
+    enabled_entity_count: int = 0
+    disabled_entity_count: int = 0
+    entity_domains: dict[str, int] = field(default_factory=dict)
     source_platforms: tuple[str, ...] = ()
 
     def as_dict(self) -> dict[str, Any]:
@@ -83,3 +86,19 @@ class CameraDiagnostic:
             name: fact.as_dict() for name, fact in self.capabilities.items()
         }
         return data
+
+    def summary(self) -> dict[str, Any]:
+        """Return a compact Home Assistant state-attribute representation."""
+        return {
+            "identifier": self.identifier,
+            "name": self.name,
+            "manufacturer": self.manufacturer.value,
+            "model": self.model.value,
+            "firmware": self.firmware.value,
+            "entity_count": self.entity_count,
+            "enabled_entity_count": self.enabled_entity_count,
+            "disabled_entity_count": self.disabled_entity_count,
+            "entity_domains": dict(sorted(self.entity_domains.items())),
+            "platforms": list(self.source_platforms),
+            "capabilities": sorted(self.capabilities),
+        }

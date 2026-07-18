@@ -13,21 +13,58 @@
   },
   "entity": {
     "sensor": {
-      "status": {"name": "Status"},
-      "camera_count": {"name": "Camera count"},
-      "recorded_event_count": {"name": "Recorded event count"},
-      "active_transports": {"name": "Active transports"},
-      "last_event": {"name": "Last event"},
-      "last_event_source": {"name": "Last event source"},
-      "last_event_latency": {"name": "Last event latency"}
+      "status": {
+        "name": "Status"
+      },
+      "camera_count": {
+        "name": "Camera count"
+      },
+      "recorded_event_count": {
+        "name": "Recorded event count"
+      },
+      "active_transports": {
+        "name": "Active transports"
+      },
+      "last_event": {
+        "name": "Last event"
+      },
+      "last_event_source": {
+        "name": "Last event source"
+      },
+      "last_event_latency": {
+        "name": "Last event latency"
+      },
+      "entity_count": {
+        "name": "Entity count"
+      },
+      "capability_count": {
+        "name": "Capability count"
+      },
+      "health_score": {
+        "name": "Health score"
+      },
+      "last_discovery": {
+        "name": "Last discovery"
+      },
+      "discovery_duration": {
+        "name": "Discovery duration"
+      }
     },
     "binary_sensor": {
-      "healthy": {"name": "Healthy"},
-      "cameras_discovered": {"name": "Cameras discovered"}
+      "healthy": {
+        "name": "Healthy"
+      },
+      "cameras_discovered": {
+        "name": "Cameras discovered"
+      }
     },
     "button": {
-      "rediscover_cameras": {"name": "Rediscover cameras"},
-      "replay_last_event": {"name": "Replay last event"}
+      "rediscover_cameras": {
+        "name": "Rediscover cameras"
+      },
+      "replay_last_event": {
+        "name": "Replay last event"
+      }
     }
   }
 }

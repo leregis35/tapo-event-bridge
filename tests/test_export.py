@@ -11,7 +11,7 @@ def test_export_contains_discovery_snapshot() -> None:
 
     payload = build_export_payload(runtime)
 
-    assert payload["schema_version"] == 1
+    assert payload["schema_version"] == 2
     assert payload["status"] == "discovery_ready"
     assert payload["camera_count"] == 1
     assert "camera-safe" in payload["cameras"]

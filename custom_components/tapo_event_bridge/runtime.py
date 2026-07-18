@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from time import monotonic
 
 from .event_engine import EventEngine
 from .events import CameraEvent, EventSource
@@ -21,12 +23,16 @@ class TapoEventBridgeRuntime:
     registry: CameraRegistry = field(default_factory=CameraRegistry)
     event_engine: EventEngine = field(default_factory=EventEngine)
     transports: list[str] = field(default_factory=list)
+    last_discovery_at: datetime | None = None
+    last_discovery_duration_ms: float | None = None
+    last_discovery_error: str | None = None
     _listeners: dict[int, RuntimeListener] = field(default_factory=dict, repr=False)
     _cleanup_callbacks: list[Callable[[], None]] = field(
         default_factory=list,
         repr=False,
     )
     _next_listener_id: int = field(default=1, repr=False)
+    _discovery_started_at: float | None = field(default=None, repr=False)
 
     @property
     def cameras(self) -> dict[str, CameraDiagnostic]:
@@ -44,6 +50,29 @@ class TapoEventBridgeRuntime:
         """Return the number of events currently retained in memory."""
         return len(self.event_engine.recorder)
 
+    @property
+    def entity_count(self) -> int:
+        """Return the total number of camera entities observed."""
+        return sum(camera.entity_count for camera in self.cameras.values())
+
+    @property
+    def capability_count(self) -> int:
+        """Return the total number of observed camera capabilities."""
+        return sum(len(camera.capabilities) for camera in self.cameras.values())
+
+    @property
+    def health_score(self) -> int:
+        """Return a conservative runtime health score from observable state."""
+        if self.last_discovery_error:
+            return 25
+        if self.status == "discovering":
+            return 75
+        if self.status == "starting":
+            return 50
+        if not self.cameras:
+            return 60
+        return 100
+
     def subscribe(self, listener: RuntimeListener) -> Callable[[], None]:
         """Subscribe to runtime changes and return an idempotent unsubscribe."""
         listener_id = self._next_listener_id
@@ -59,8 +88,43 @@ class TapoEventBridgeRuntime:
         """Register a callback to run when the runtime is closed."""
         self._cleanup_callbacks.append(callback)
 
+    def begin_discovery(self) -> None:
+        """Mark a registry-only discovery pass as running."""
+        self.status = "discovering"
+        self.last_discovery_error = None
+        self._discovery_started_at = monotonic()
+        self._notify_listeners()
+
+    def complete_discovery(
+        self,
+        cameras: tuple[CameraDiagnostic, ...],
+    ) -> None:
+        """Store discovery results and timing metadata."""
+        self.registry.replace(cameras)
+        self.status = "discovery_ready"
+        self.last_discovery_at = datetime.now(UTC)
+        if self._discovery_started_at is not None:
+            self.last_discovery_duration_ms = round(
+                (monotonic() - self._discovery_started_at) * 1000,
+                3,
+            )
+        self._discovery_started_at = None
+        self._notify_listeners()
+
+    def fail_discovery(self, error: Exception) -> None:
+        """Record a discovery failure without retaining a traceback."""
+        self.status = "discovery_error"
+        self.last_discovery_error = type(error).__name__
+        if self._discovery_started_at is not None:
+            self.last_discovery_duration_ms = round(
+                (monotonic() - self._discovery_started_at) * 1000,
+                3,
+            )
+        self._discovery_started_at = None
+        self._notify_listeners()
+
     def replace_cameras(self, cameras: tuple[CameraDiagnostic, ...]) -> None:
-        """Replace discovery results and update runtime status."""
+        """Replace discovery results for backwards-compatible callers."""
         self.registry.replace(cameras)
         self.status = "discovery_ready"
         self._notify_listeners()

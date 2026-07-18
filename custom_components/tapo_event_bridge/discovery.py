@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 from collections.abc import Iterable
 from hashlib import sha256
 from typing import Any
@@ -71,6 +71,12 @@ def build_camera_diagnostics(
 
         capabilities = infer_capabilities(device_entities)
         platforms = tuple(sorted({entity.platform for entity in device_entities}))
+        domain_counts = Counter(
+            entity.entity_id.split(".", 1)[0] for entity in device_entities
+        )
+        enabled_entity_count = sum(
+            not entity.disabled for entity in device_entities
+        )
         registry_source = "Home Assistant device registry"
 
         camera = CameraDiagnostic(
@@ -114,6 +120,9 @@ def build_camera_diagnostics(
             ),
             capabilities=capabilities,
             entity_count=len(device_entities),
+            enabled_entity_count=enabled_entity_count,
+            disabled_entity_count=len(device_entities) - enabled_entity_count,
+            entity_domains=dict(sorted(domain_counts.items())),
             source_platforms=platforms,
         )
         cameras.append(camera)

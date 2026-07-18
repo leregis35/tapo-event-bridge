@@ -57,6 +57,20 @@ class LastEventSensor(BridgeSensor):
         return {} if event is None else event.as_dict()
 
 
+class CameraInventorySensor(BridgeSensor):
+    """Expose compact, live inventory details for discovered cameras."""
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return one compact summary per discovered camera."""
+        return {
+            "cameras": [
+                camera.summary()
+                for _, camera in sorted(self._runtime.cameras.items())
+            ]
+        }
+
+
 def _latest_event_type(runtime: TapoEventBridgeRuntime) -> str:
     event = runtime.latest_event
     return "none" if event is None else event.event_type.value
@@ -76,6 +90,11 @@ def _active_transports(runtime: TapoEventBridgeRuntime) -> str:
     return ", ".join(runtime.transports) if runtime.transports else "none"
 
 
+def _last_discovery(runtime: TapoEventBridgeRuntime) -> str | None:
+    value = runtime.last_discovery_at
+    return None if value is None else value.isoformat()
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: TapoEventBridgeConfigEntry,
@@ -87,11 +106,43 @@ async def async_setup_entry(
     async_add_entities(
         (
             BridgeSensor(runtime, entry_id, "status", lambda value: value.status),
-            BridgeSensor(
+            CameraInventorySensor(
                 runtime,
                 entry_id,
                 "camera_count",
                 lambda value: len(value.cameras),
+            ),
+            BridgeSensor(
+                runtime,
+                entry_id,
+                "entity_count",
+                lambda value: value.entity_count,
+            ),
+            BridgeSensor(
+                runtime,
+                entry_id,
+                "capability_count",
+                lambda value: value.capability_count,
+            ),
+            BridgeSensor(
+                runtime,
+                entry_id,
+                "health_score",
+                lambda value: value.health_score,
+                native_unit="%",
+            ),
+            BridgeSensor(
+                runtime,
+                entry_id,
+                "last_discovery",
+                _last_discovery,
+            ),
+            BridgeSensor(
+                runtime,
+                entry_id,
+                "discovery_duration",
+                lambda value: value.last_discovery_duration_ms,
+                native_unit=UnitOfTime.MILLISECONDS,
             ),
             BridgeSensor(
                 runtime,
