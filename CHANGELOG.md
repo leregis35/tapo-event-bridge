@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.0 - Home Assistant Event Bridge
+
+- Subscribed only to discovered Tapo camera and binary-sensor entities.
+- Normalized motion, person, vehicle, animal, crying, tamper, intrusion and line-crossing state changes.
+- Added camera online/offline events from existing Home Assistant camera states.
+- Added bounded in-memory event activity analytics and recent-event attributes.
+- Added no polling, no database writes and no direct camera wake-up.
+
 ## 0.7.0 - Fleet Intelligence
 
 - Added registry-only fleet analytics and a fleet quality grade.

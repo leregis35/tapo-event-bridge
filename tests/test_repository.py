@@ -17,7 +17,7 @@ def test_manifest_identity() -> None:
     manifest = json.loads((INTEGRATION / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["domain"] == "tapo_event_bridge"
     assert manifest["config_flow"] is True
-    assert manifest["version"] == "0.7.0"
+    assert manifest["version"] == "0.8.0"
 
 def test_translations_are_valid_json() -> None:
     for language in ("en", "fr"):

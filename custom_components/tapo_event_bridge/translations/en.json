@@ -54,6 +54,9 @@
       },
       "fleet_insights": {
         "name": "Fleet Insights"
+      },
+      "event_activity": {
+        "name": "Event activity"
       }
     },
     "binary_sensor": {

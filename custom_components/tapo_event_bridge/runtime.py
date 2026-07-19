@@ -173,6 +173,45 @@ class TapoEventBridgeRuntime:
         }
 
     @property
+    def event_activity(self) -> dict[str, object]:
+        """Return bounded, in-memory activity analytics for normalized events."""
+        events = self.event_engine.recorder.snapshot()
+        by_type: dict[str, int] = {}
+        by_source: dict[str, int] = {}
+        by_camera: dict[str, int] = {}
+        active: dict[str, list[str]] = {}
+
+        for event in events:
+            event_type = event.event_type.value
+            source = event.source.value
+            by_type[event_type] = by_type.get(event_type, 0) + 1
+            by_source[source] = by_source.get(source, 0) + 1
+            by_camera[event.camera_id] = by_camera.get(event.camera_id, 0) + 1
+
+            active_types = active.setdefault(event.camera_id, [])
+            if event.state.value == "started" and event_type not in active_types:
+                active_types.append(event_type)
+            elif event.state.value == "ended" and event_type in active_types:
+                active_types.remove(event_type)
+
+        active = {
+            camera_id: sorted(types)
+            for camera_id, types in sorted(active.items())
+            if types
+        }
+        recent = [event.as_dict() for event in events[-20:]]
+        return {
+            "total": len(events),
+            "by_type": dict(sorted(by_type.items())),
+            "by_source": dict(sorted(by_source.items())),
+            "by_camera": dict(sorted(by_camera.items())),
+            "active_events": active,
+            "recent_events": recent,
+            "buffer_limit": self.event_engine.recorder.max_events,
+            "data_policy": "Bounded memory only; no database writes or polling.",
+        }
+
+    @property
     def health_score(self) -> int:
         """Return a conservative runtime health score from observable state."""
         if self.last_discovery_error:

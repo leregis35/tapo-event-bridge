@@ -71,6 +71,15 @@ class CameraInventorySensor(BridgeSensor):
         }
 
 
+class EventActivitySensor(BridgeSensor):
+    """Expose normalized activity captured from existing HA entities."""
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return bounded event statistics and recent normalized events."""
+        return self._runtime.event_activity
+
+
 class FleetInsightsSensor(BridgeSensor):
     """Expose fleet-wide analytics without querying any camera."""
 
@@ -200,6 +209,12 @@ async def async_setup_entry(
                 runtime,
                 entry_id,
                 "recorded_event_count",
+                lambda value: value.recorded_event_count,
+            ),
+            EventActivitySensor(
+                runtime,
+                entry_id,
+                "event_activity",
                 lambda value: value.recorded_event_count,
             ),
             BridgeSensor(

@@ -54,6 +54,9 @@
       },
       "fleet_insights": {
         "name": "Analyse du parc"
+      },
+      "event_activity": {
+        "name": "Activité des événements"
       }
     },
     "binary_sensor": {
