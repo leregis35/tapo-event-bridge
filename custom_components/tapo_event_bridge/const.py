@@ -2,7 +2,7 @@
 
 DOMAIN = "tapo_event_bridge"
 NAME = "Tapo Event Bridge"
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
-PLATFORMS = ("binary_sensor", "button", "sensor")
+PLATFORMS = ("binary_sensor", "button", "select", "sensor")
 EVENT_CAMERA = f"{DOMAIN}_event"

@@ -34,6 +34,9 @@ class TapoEventBridgeRuntime:
     )
     _next_listener_id: int = field(default=1, repr=False)
     _discovery_started_at: float | None = field(default=None, repr=False)
+    journal_camera_filter: str = "all"
+    journal_event_type_filter: str = "all"
+    journal_limit: int = 25
 
     @property
     def cameras(self) -> dict[str, CameraDiagnostic]:
@@ -236,6 +239,87 @@ class TapoEventBridgeRuntime:
             "buffer_limit": self.event_engine.recorder.max_events,
             "data_policy": "Bounded memory only; no database writes or polling.",
         }
+
+
+    @property
+    def journal_camera_options(self) -> tuple[str, ...]:
+        """Return stable camera filter options for the event journal."""
+        camera_ids = set(self.cameras)
+        camera_ids.update(
+            event.camera_id for event in self.event_engine.recorder.snapshot()
+        )
+        return ("all", *sorted(camera_ids))
+
+    @property
+    def journal_event_type_options(self) -> tuple[str, ...]:
+        """Return stable event-type filter options for the event journal."""
+        observed = {
+            event.event_type.value
+            for event in self.event_engine.recorder.snapshot()
+        }
+        return ("all", *sorted(observed))
+
+    @property
+    def event_journal(self) -> dict[str, object]:
+        """Return a compact, filterable event journal safe for Recorder."""
+        events = self.event_engine.recorder.snapshot()
+        if self.journal_camera_filter != "all":
+            events = tuple(
+                event
+                for event in events
+                if event.camera_id == self.journal_camera_filter
+            )
+        if self.journal_event_type_filter != "all":
+            events = tuple(
+                event
+                for event in events
+                if event.event_type.value == self.journal_event_type_filter
+            )
+
+        camera_names = {
+            identifier: camera.name
+            for identifier, camera in self.cameras.items()
+        }
+        limited = events[-self.journal_limit :]
+        entries = [
+            {
+                "time": event.occurred_at.isoformat(),
+                "camera_id": event.camera_id,
+                "camera_name": camera_names.get(event.camera_id),
+                "type": event.event_type.value,
+                "state": event.state.value,
+                "source": event.source.value,
+                "latency_ms": round(event.latency_ms, 3),
+                "confidence": event.confidence,
+            }
+            for event in reversed(limited)
+        ]
+        return {
+            "schema_version": 1,
+            "camera_filter": self.journal_camera_filter,
+            "event_type_filter": self.journal_event_type_filter,
+            "matching_event_count": len(events),
+            "displayed_event_count": len(entries),
+            "display_limit": self.journal_limit,
+            "events": entries,
+            "data_policy": "Bounded in-memory journal; no camera polling.",
+        }
+
+    def set_journal_camera_filter(self, option: str) -> None:
+        """Set the journal camera filter and notify entities."""
+        if option not in self.journal_camera_options:
+            msg = f"Unsupported camera filter: {option}"
+            raise ValueError(msg)
+        self.journal_camera_filter = option
+        self._notify_listeners()
+
+    def set_journal_event_type_filter(self, option: str) -> None:
+        """Set the journal event-type filter and notify entities."""
+        if option not in self.journal_event_type_options:
+            msg = f"Unsupported event type filter: {option}"
+            raise ValueError(msg)
+        self.journal_event_type_filter = option
+        self._notify_listeners()
 
     @property
     def dashboard_snapshot(self) -> dict[str, object]:

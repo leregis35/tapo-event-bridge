@@ -9,7 +9,7 @@ def test_required_integration_files_exist() -> None:
     required = {
         "__init__.py", "config_flow.py", "const.py",
         "diagnostics.py", "manifest.json", "strings.json",
-        "sensor.py", "binary_sensor.py", "button.py", "entity.py",
+        "sensor.py", "binary_sensor.py", "button.py", "select.py", "entity.py",
     }
     assert required.issubset({path.name for path in INTEGRATION.iterdir()})
 
@@ -17,7 +17,7 @@ def test_manifest_identity() -> None:
     manifest = json.loads((INTEGRATION / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["domain"] == "tapo_event_bridge"
     assert manifest["config_flow"] is True
-    assert manifest["version"] == "1.0.1"
+    assert manifest["version"] == "1.1.0"
 
 def test_translations_are_valid_json() -> None:
     for language in ("en", "fr"):

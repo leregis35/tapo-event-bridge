@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0 - Native Event Journal
+
+- Added a compact, Recorder-safe event journal sensor.
+- Added camera and event-type journal filters as native Home Assistant selects.
+- Added newest-first, bounded journal entries with latency and confidence.
+- Kept all journal data in memory with no direct camera polling.
+- Added tests for filtering, validation, ordering, and the 16 KiB Recorder limit.
+
 ## 1.0.1 - Recorder-safe Capability Explorer
 
 - Reduced Capability Explorer state attributes below Home Assistant Recorder limits.

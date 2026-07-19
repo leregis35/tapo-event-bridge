@@ -63,6 +63,9 @@
       },
       "runtime_metrics": {
         "name": "Métriques d’exécution"
+      },
+      "event_journal": {
+        "name": "Journal d’événements"
       }
     },
     "binary_sensor": {
@@ -82,6 +85,14 @@
       },
       "clear_event_history": {
         "name": "Effacer l’historique des événements"
+      }
+    },
+    "select": {
+      "journal_camera_filter": {
+        "name": "Filtre caméra du journal"
+      },
+      "journal_event_type_filter": {
+        "name": "Filtre type d’événement du journal"
       }
     }
   }

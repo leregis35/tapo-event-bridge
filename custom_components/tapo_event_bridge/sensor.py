@@ -72,6 +72,15 @@ class CameraInventorySensor(BridgeSensor):
         }
 
 
+class EventJournalSensor(BridgeSensor):
+    """Expose a compact, filterable in-memory event journal."""
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return Recorder-safe event-journal entries."""
+        return self._runtime.event_journal
+
+
 class EventActivitySensor(BridgeSensor):
     """Expose normalized activity captured from existing HA entities."""
 
@@ -215,6 +224,14 @@ async def async_setup_entry(
                 entry_id,
                 "event_activity",
                 lambda value: value.recorded_event_count,
+            ),
+            EventJournalSensor(
+                runtime,
+                entry_id,
+                "event_journal",
+                lambda value: (
+                    "empty" if value.recorded_event_count == 0 else "ready"
+                ),
             ),
             DashboardSnapshotSensor(
                 runtime,
