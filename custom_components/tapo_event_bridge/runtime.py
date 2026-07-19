@@ -64,7 +64,6 @@ class TapoEventBridgeRuntime:
         """Return the total number of observed camera capabilities."""
         return sum(len(camera.capabilities) for camera in self.cameras.values())
 
-
     @property
     def uptime_seconds(self) -> int:
         """Return runtime uptime in whole seconds."""
@@ -107,7 +106,6 @@ class TapoEventBridgeRuntime:
         if not cameras:
             return None
         return round(sum(camera.health_score for camera in cameras) / len(cameras))
-
 
     @property
     def fleet_insights(self) -> dict[str, object]:
@@ -170,10 +168,14 @@ class TapoEventBridgeRuntime:
             grade = "attention"
 
         camera_count = len(cameras)
-        coverage_percent = {
-            capability: round(count * 100 / camera_count)
-            for capability, count in sorted(capability_coverage.items())
-        } if camera_count else {}
+        coverage_percent = (
+            {
+                capability: round(count * 100 / camera_count)
+                for capability, count in sorted(capability_coverage.items())
+            }
+            if camera_count
+            else {}
+        )
 
         return {
             "grade": grade,
@@ -240,7 +242,6 @@ class TapoEventBridgeRuntime:
             "data_policy": "Bounded memory only; no database writes or polling.",
         }
 
-
     @property
     def journal_camera_options(self) -> tuple[str, ...]:
         """Return stable camera filter options for the event journal."""
@@ -254,8 +255,7 @@ class TapoEventBridgeRuntime:
     def journal_event_type_options(self) -> tuple[str, ...]:
         """Return stable event-type filter options for the event journal."""
         observed = {
-            event.event_type.value
-            for event in self.event_engine.recorder.snapshot()
+            event.event_type.value for event in self.event_engine.recorder.snapshot()
         }
         return ("all", *sorted(observed))
 
@@ -277,8 +277,7 @@ class TapoEventBridgeRuntime:
             )
 
         camera_names = {
-            identifier: camera.name
-            for identifier, camera in self.cameras.items()
+            identifier: camera.name for identifier, camera in self.cameras.items()
         }
         limited = events[-self.journal_limit :]
         entries = [
@@ -322,6 +321,108 @@ class TapoEventBridgeRuntime:
         self._notify_listeners()
 
     @property
+    def fleet_overview_state(self) -> str:
+        """Return the high-level state of the fleet command center."""
+        if self.last_discovery_error:
+            return "error"
+        if not self.cameras:
+            return "empty"
+        if self.event_activity["active_events"]:
+            return "active"
+        if self.fleet_insights["cameras_needing_attention"]:
+            return "attention"
+        return "idle"
+
+    @property
+    def fleet_overview(self) -> dict[str, object]:
+        """Return a compact supervision payload for the whole camera fleet."""
+        events = self.event_engine.recorder.snapshot()
+        activity = self.event_activity
+        insights = self.fleet_insights
+        camera_names = {
+            identifier: camera.name for identifier, camera in self.cameras.items()
+        }
+        last_by_camera: dict[str, CameraEvent] = {}
+        for event in reversed(events):
+            last_by_camera.setdefault(event.camera_id, event)
+
+        cameras = []
+        for identifier, camera in sorted(self.cameras.items()):
+            last_event = last_by_camera.get(identifier)
+            cameras.append(
+                {
+                    "identifier": identifier,
+                    "name": camera.name,
+                    "model": camera.model.value,
+                    "power_source": camera.power_source,
+                    "health_score": camera.health_score,
+                    "event_count": activity["by_camera"].get(identifier, 0),
+                    "active_events": activity["active_events"].get(identifier, []),
+                    "last_event_type": (
+                        None if last_event is None else last_event.event_type.value
+                    ),
+                    "last_event_state": (
+                        None if last_event is None else last_event.state.value
+                    ),
+                    "last_event_at": (
+                        None
+                        if last_event is None
+                        else last_event.occurred_at.isoformat()
+                    ),
+                }
+            )
+
+        most_active_id = None
+        most_active_count = 0
+        if activity["by_camera"]:
+            most_active_id, most_active_count = max(
+                activity["by_camera"].items(),
+                key=lambda item: (item[1], item[0]),
+            )
+
+        latest = self.latest_event
+        return {
+            "schema_version": 1,
+            "state": self.fleet_overview_state,
+            "camera_count": len(cameras),
+            "fleet_health_score": self.health_score,
+            "average_camera_health": self.average_camera_health,
+            "fleet_grade": insights["grade"],
+            "recorded_event_count": self.recorded_event_count,
+            "active_event_count": sum(
+                len(types) for types in activity["active_events"].values()
+            ),
+            "event_types": activity["by_type"],
+            "most_active_camera": (
+                None
+                if most_active_id is None
+                else {
+                    "identifier": most_active_id,
+                    "name": camera_names.get(most_active_id),
+                    "event_count": most_active_count,
+                }
+            ),
+            "last_event": (
+                None
+                if latest is None
+                else {
+                    "camera_id": latest.camera_id,
+                    "camera_name": camera_names.get(latest.camera_id),
+                    "type": latest.event_type.value,
+                    "state": latest.state.value,
+                    "time": latest.occurred_at.isoformat(),
+                }
+            ),
+            "cameras_needing_attention": insights["cameras_needing_attention"][:12],
+            "cameras": cameras[:12],
+            "cameras_truncated": len(cameras) > 12,
+            "data_policy": (
+                "Compact in-memory supervision; Home Assistant events and "
+                "registry data only, with no direct camera polling."
+            ),
+        }
+
+    @property
     def dashboard_snapshot(self) -> dict[str, object]:
         """Return a stable, compact schema for Lovelace dashboards."""
         insights = self.fleet_insights
@@ -336,9 +437,7 @@ class TapoEventBridgeRuntime:
                 "health_score": camera.health_score,
                 "entity_count": camera.entity_count,
                 "capabilities": sorted(camera.capabilities),
-                "active_events": activity["active_events"].get(
-                    camera.identifier, []
-                ),
+                "active_events": activity["active_events"].get(camera.identifier, []),
                 "event_count": activity["by_camera"].get(camera.identifier, 0),
             }
             for _, camera in sorted(self.cameras.items())
@@ -358,12 +457,8 @@ class TapoEventBridgeRuntime:
             "last_event": None if latest is None else latest.as_dict(),
             "event_types": activity["by_type"],
             "power_distribution": insights["power_distribution"],
-            "capability_coverage_percent": insights[
-                "capability_coverage_percent"
-            ],
-            "cameras_needing_attention": insights[
-                "cameras_needing_attention"
-            ],
+            "capability_coverage_percent": insights["capability_coverage_percent"],
+            "cameras_needing_attention": insights["cameras_needing_attention"],
             "last_scan": insights["last_scan"],
             "scan_duration_ms": insights["scan_duration_ms"],
             "cameras": cameras,
@@ -464,7 +559,6 @@ class TapoEventBridgeRuntime:
         replayed = original.as_replay()
         await self.publish_event(replayed)
         return replayed
-
 
     def clear_events(self) -> None:
         """Clear the bounded event history and notify entity listeners."""

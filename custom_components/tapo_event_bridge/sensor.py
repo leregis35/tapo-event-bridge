@@ -66,8 +66,7 @@ class CameraInventorySensor(BridgeSensor):
         """Return one compact summary per discovered camera."""
         return {
             "cameras": [
-                camera.summary()
-                for _, camera in sorted(self._runtime.cameras.items())
+                camera.summary() for _, camera in sorted(self._runtime.cameras.items())
             ]
         }
 
@@ -99,6 +98,15 @@ class FleetInsightsSensor(BridgeSensor):
         return self._runtime.fleet_insights
 
 
+class FleetOverviewSensor(BridgeSensor):
+    """Expose a compact command-center view of the camera fleet."""
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return Recorder-safe fleet supervision attributes."""
+        return self._runtime.fleet_overview
+
+
 class DashboardSnapshotSensor(BridgeSensor):
     """Expose a stable payload designed for Lovelace presentation."""
 
@@ -124,7 +132,6 @@ class CapabilityExplorerSensor(BridgeSensor):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return a compact profile safe for Home Assistant Recorder."""
         return build_capability_explorer_attributes(self._runtime)
-
 
 
 def _latest_event_type(runtime: TapoEventBridgeRuntime) -> str:
@@ -180,7 +187,6 @@ async def async_setup_entry(
                 "capability_count",
                 lambda value: value.capability_count,
             ),
-
             FleetInsightsSensor(
                 runtime,
                 entry_id,
@@ -229,9 +235,13 @@ async def async_setup_entry(
                 runtime,
                 entry_id,
                 "event_journal",
-                lambda value: (
-                    "empty" if value.recorded_event_count == 0 else "ready"
-                ),
+                lambda value: "empty" if value.recorded_event_count == 0 else "ready",
+            ),
+            FleetOverviewSensor(
+                runtime,
+                entry_id,
+                "fleet_overview",
+                lambda value: value.fleet_overview_state,
             ),
             DashboardSnapshotSensor(
                 runtime,

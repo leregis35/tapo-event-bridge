@@ -74,9 +74,7 @@ def build_camera_diagnostics(
         domain_counts = Counter(
             entity.entity_id.split(".", 1)[0] for entity in device_entities
         )
-        enabled_entity_count = sum(
-            not entity.disabled for entity in device_entities
-        )
+        enabled_entity_count = sum(not entity.disabled for entity in device_entities)
         registry_source = "Home Assistant device registry"
 
         camera = CameraDiagnostic(
@@ -113,9 +111,7 @@ def build_camera_diagnostics(
                 ),
                 source=("Home Assistant entity registry" if platforms else None),
                 note=(
-                    f"Observed platforms: {', '.join(platforms)}"
-                    if platforms
-                    else None
+                    f"Observed platforms: {', '.join(platforms)}" if platforms else None
                 ),
             ),
             capabilities=capabilities,

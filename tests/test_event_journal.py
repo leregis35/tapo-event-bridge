@@ -19,9 +19,7 @@ def _event(
     *,
     seconds: int,
 ) -> CameraEvent:
-    occurred = datetime(2026, 7, 19, 12, 0, tzinfo=UTC) + timedelta(
-        seconds=seconds
-    )
+    occurred = datetime(2026, 7, 19, 12, 0, tzinfo=UTC) + timedelta(seconds=seconds)
     return CameraEvent(
         camera_id=camera_id,
         event_type=event_type,

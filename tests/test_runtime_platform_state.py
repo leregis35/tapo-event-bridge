@@ -47,6 +47,7 @@ def test_replay_last_event_skips_existing_replays() -> None:
         event_type=EventType.MOTION,
         source=EventSource.TEST,
     )
+
     async def run_replays() -> tuple[CameraEvent | None, CameraEvent | None]:
         await runtime.publish_event(original)
         first = await runtime.replay_last_event()

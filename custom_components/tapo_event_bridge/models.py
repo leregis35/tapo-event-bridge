@@ -115,8 +115,7 @@ class CameraDiagnostic:
     def capability_details(self) -> dict[str, dict[str, Any]]:
         """Return sorted capability evidence suitable for HA attributes."""
         return {
-            name: fact.as_dict()
-            for name, fact in sorted(self.capabilities.items())
+            name: fact.as_dict() for name, fact in sorted(self.capabilities.items())
         }
 
     def explorer_summary(self) -> dict[str, Any]:

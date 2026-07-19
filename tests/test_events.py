@@ -40,9 +40,7 @@ def test_camera_event_can_include_raw_payload_explicitly() -> None:
         raw_payload={"detected": True},
     )
 
-    assert event.as_dict(include_raw_payload=True)["raw_payload"] == {
-        "detected": True
-    }
+    assert event.as_dict(include_raw_payload=True)["raw_payload"] == {"detected": True}
 
 
 def test_camera_event_rejects_invalid_confidence() -> None:

@@ -66,6 +66,9 @@
       },
       "event_journal": {
         "name": "Event journal"
+      },
+      "fleet_overview": {
+        "name": "Fleet command center"
       }
     },
     "binary_sensor": {

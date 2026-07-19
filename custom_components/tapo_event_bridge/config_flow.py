@@ -1,4 +1,5 @@
 """Config flow for Tapo Event Bridge."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -11,6 +12,7 @@ from .const import DOMAIN, NAME
 
 class TapoEventBridgeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Tapo Event Bridge."""
+
     VERSION = 1
 
     async def async_step_user(

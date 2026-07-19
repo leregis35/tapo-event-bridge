@@ -16,9 +16,7 @@ def build_capability_explorer_attributes(
 ) -> dict[str, Any]:
     """Build compact Capability Explorer attributes safe for Recorder."""
     cameras = [
-        camera.recorder_summary(
-            max_capabilities=MAX_RECORDER_CAPABILITIES_PER_CAMERA
-        )
+        camera.recorder_summary(max_capabilities=MAX_RECORDER_CAPABILITIES_PER_CAMERA)
         for _, camera in sorted(runtime.cameras.items())
     ]
     return {

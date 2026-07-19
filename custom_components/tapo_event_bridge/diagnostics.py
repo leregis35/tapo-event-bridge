@@ -42,8 +42,7 @@ async def async_get_config_entry_diagnostics(
         "event_engine": entry.runtime_data.event_engine.diagnostic_snapshot(),
         "evidence_legend": {
             "confirmed": (
-                "Backed by documentation, protocol evidence, "
-                "or a reproducible test."
+                "Backed by documentation, protocol evidence, or a reproducible test."
             ),
             "observed": "Observed from Home Assistant or the camera lab.",
             "hypothesis": "Plausible but not yet proven.",

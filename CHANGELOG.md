@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0 - Fleet Command Center
+
+- Added a Recorder-safe fleet supervision sensor.
+- Added per-camera latest activity, active detections and event totals.
+- Added most-active-camera and latest-event fleet summaries.
+- Kept all analytics in memory with no direct camera polling.
+
 ## 1.1.0 - Native Event Journal
 
 - Added a compact, Recorder-safe event journal sensor.

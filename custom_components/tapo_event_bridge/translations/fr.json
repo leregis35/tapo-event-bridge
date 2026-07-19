@@ -66,6 +66,9 @@
       },
       "event_journal": {
         "name": "Journal d’événements"
+      },
+      "fleet_overview": {
+        "name": "Centre de supervision du parc"
       }
     },
     "binary_sensor": {
