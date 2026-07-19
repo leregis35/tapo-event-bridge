@@ -65,6 +65,8 @@ def build_event_from_state_change(
     new_state: str,
     attributes: Mapping[str, Any] | None = None,
     occurred_at: datetime | None = None,
+    camera_name: str | None = None,
+    camera_model: str | None = None,
 ) -> CameraEvent | None:
     """Create a normalized event for a meaningful HA state transition."""
     if old_state == new_state:
@@ -96,7 +98,10 @@ def build_event_from_state_change(
         occurred_at=occurred_at or datetime.now(UTC),
         metadata={
             "source_entity": safe_entity,
+            "source_entity_id": entity_id,
             "source_domain": domain,
+            "camera_name": camera_name,
+            "camera_model": camera_model,
             "previous_state": old_state,
             "new_state": new_state,
             "evidence": "observed",
@@ -115,7 +120,7 @@ async def async_subscribe_home_assistant_events(
 
     entity_registry = er.async_get(hass)
     camera_ids = set(runtime.cameras)
-    tracked: dict[str, str] = {}
+    tracked: dict[str, tuple[str, str | None, str | None]] = {}
 
     for entity in entity_registry.entities.values():
         if entity.disabled or entity.device_id is None:
@@ -125,7 +130,12 @@ async def async_subscribe_home_assistant_events(
             continue
         camera_id = privacy_safe_identifier(entity.device_id)
         if camera_id in camera_ids:
-            tracked[entity.entity_id] = camera_id
+            camera = runtime.cameras[camera_id]
+            tracked[entity.entity_id] = (
+                camera_id,
+                camera.name,
+                None if camera.model.value is None else str(camera.model.value),
+            )
 
     if not tracked:
         return lambda: None
@@ -133,11 +143,12 @@ async def async_subscribe_home_assistant_events(
     @callback
     def _async_state_changed(event: Event[EventStateChangedData]) -> None:
         entity_id = event.data["entity_id"]
-        camera_id = tracked.get(entity_id)
+        source = tracked.get(entity_id)
         new_state = event.data["new_state"]
         old_state = event.data["old_state"]
-        if camera_id is None or new_state is None:
+        if source is None or new_state is None:
             return
+        camera_id, camera_name, camera_model = source
 
         normalized = build_event_from_state_change(
             camera_id=camera_id,
@@ -146,6 +157,8 @@ async def async_subscribe_home_assistant_events(
             new_state=new_state.state,
             attributes=new_state.attributes,
             occurred_at=new_state.last_changed,
+            camera_name=camera_name,
+            camera_model=camera_model,
         )
         if normalized is not None:
             hass.async_create_task(runtime.publish_event(normalized))

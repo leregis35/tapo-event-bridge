@@ -26,6 +26,8 @@ def test_builds_privacy_safe_home_assistant_event() -> None:
         old_state="off",
         new_state="on",
         attributes={"device_class": "motion"},
+        camera_name="Garage",
+        camera_model="C520WS",
     )
 
     assert event is not None
@@ -34,6 +36,11 @@ def test_builds_privacy_safe_home_assistant_event() -> None:
     assert event.state is EventState.STARTED
     assert event.metadata["source_entity"].startswith("camera-")
     assert "garage" not in str(event.metadata["source_entity"])
+    assert event.metadata["source_entity_id"] == (
+        "binary_sensor.garage_person_detection"
+    )
+    assert event.metadata["camera_name"] == "Garage"
+    assert event.metadata["camera_model"] == "C520WS"
 
 
 def test_ignores_unrelated_or_duplicate_state_changes() -> None:

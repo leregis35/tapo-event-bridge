@@ -77,3 +77,34 @@ def test_person_lighting_duration_is_bounded() -> None:
         runtime.set_person_lighting_duration(9)
     with pytest.raises(ValueError):
         runtime.set_person_lighting_duration(901)
+
+
+def test_build_person_light_targets_matches_sibling_floodlight_by_name() -> None:
+    entities = (
+        DiscoveredEntity(
+            "binary_sensor.carport_person", "tapo", "camera-device"
+        ),
+        DiscoveredEntity(
+            "light.carport_floodlight_timed", "tapo", "light-device"
+        ),
+        DiscoveredEntity(
+            "light.porte_entree_floodlight_timed", "tapo", "other-light"
+        ),
+    )
+    assert build_person_light_targets(
+        {"camera-device": "camera-one"},
+        entities,
+        {"camera-one": "Carport"},
+    ) == {"camera-one": ("light.carport_floodlight_timed",)}
+
+
+def test_runtime_resolves_camera_name_and_summary() -> None:
+    runtime = TapoEventBridgeRuntime()
+    event = CameraEvent(
+        camera_id="camera-one",
+        event_type=EventType.PERSON,
+        source=EventSource.HOME_ASSISTANT,
+        metadata={"camera_name": "Carport"},
+    )
+    assert runtime.camera_name_for_event(event) == "Carport"
+    assert runtime.latest_event_camera_name == "none"

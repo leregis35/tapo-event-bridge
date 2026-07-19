@@ -149,8 +149,15 @@ def _latest_event_type(runtime: TapoEventBridgeRuntime) -> str:
 
 
 def _latest_event_source(runtime: TapoEventBridgeRuntime) -> str:
-    event = runtime.latest_event
-    return "none" if event is None else event.source.value
+    return runtime.latest_event_camera_name
+
+
+def _latest_event_transport(runtime: TapoEventBridgeRuntime) -> str:
+    return runtime.latest_event_transport
+
+
+def _latest_event_summary(runtime: TapoEventBridgeRuntime) -> str:
+    return runtime.latest_event_summary
 
 
 def _latest_event_latency(runtime: TapoEventBridgeRuntime) -> float | None:
@@ -290,6 +297,18 @@ async def async_setup_entry(
                 entry_id,
                 "last_event_source",
                 _latest_event_source,
+            ),
+            BridgeSensor(
+                runtime,
+                entry_id,
+                "last_event_transport",
+                _latest_event_transport,
+            ),
+            BridgeSensor(
+                runtime,
+                entry_id,
+                "last_event_summary",
+                _latest_event_summary,
             ),
             BridgeSensor(
                 runtime,

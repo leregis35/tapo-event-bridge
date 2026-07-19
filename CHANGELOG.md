@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.4.0 - Source Resolution Engine
+
+- Resolve every Home Assistant event to a readable camera name and model.
+- Repurpose the last-event source sensor to show the camera instead of the transport.
+- Add dedicated last-event transport and combined camera/event sensors.
+- Keep the real source entity locally in event metadata for reliable diagnostics.
+- Add sibling-device floodlight matching for C660/C425 style integrations.
+- Record unmapped person events so lighting failures are diagnosable.
+
 ## 1.3.0 - Person Lighting Bridge
 
 - Added automatic mapping of camera-local Home Assistant light entities.

@@ -29,7 +29,7 @@
         "name": "Last event"
       },
       "last_event_source": {
-        "name": "Last event source"
+        "name": "Last event camera"
       },
       "last_event_latency": {
         "name": "Last event latency"
@@ -72,6 +72,12 @@
       },
       "person_lighting_status": {
         "name": "Person lighting status"
+      },
+      "last_event_transport": {
+        "name": "Last event transport"
+      },
+      "last_event_summary": {
+        "name": "Last event summary"
       }
     },
     "binary_sensor": {

@@ -42,6 +42,8 @@ class TapoEventBridgeRuntime:
     person_light_targets: dict[str, tuple[str, ...]] = field(default_factory=dict)
     person_lighting_trigger_count: int = 0
     last_person_lighting_trigger: dict[str, object] | None = None
+    unmapped_person_event_count: int = 0
+    last_unmapped_person_event: dict[str, object] | None = None
 
     @property
     def cameras(self) -> dict[str, CameraDiagnostic]:
@@ -53,6 +55,38 @@ class TapoEventBridgeRuntime:
         """Return the newest recorded event, if available."""
         events = self.event_engine.recorder.snapshot(limit=1)
         return events[-1] if events else None
+
+
+    def camera_name_for_event(self, event: CameraEvent | None) -> str:
+        """Resolve a human-readable camera name for one normalized event."""
+        if event is None:
+            return "none"
+        metadata_name = event.metadata.get("camera_name")
+        if metadata_name:
+            return str(metadata_name)
+        camera = self.cameras.get(event.camera_id)
+        if camera is not None and camera.name:
+            return camera.name
+        return event.camera_id
+
+    @property
+    def latest_event_camera_name(self) -> str:
+        """Return the latest event camera rather than its transport."""
+        return self.camera_name_for_event(self.latest_event)
+
+    @property
+    def latest_event_transport(self) -> str:
+        """Return the mechanism that produced the latest event."""
+        event = self.latest_event
+        return "none" if event is None else event.source.value
+
+    @property
+    def latest_event_summary(self) -> str:
+        """Return a compact camera plus event label for the UI."""
+        event = self.latest_event
+        if event is None:
+            return "none"
+        return f"{self.camera_name_for_event(event)} · {event.event_type.value}"
 
     @property
     def recorded_event_count(self) -> int:
@@ -95,6 +129,7 @@ class TapoEventBridgeRuntime:
                 len(targets) for targets in self.person_light_targets.values()
             ),
             "person_lighting_trigger_count": self.person_lighting_trigger_count,
+            "unmapped_person_event_count": self.unmapped_person_event_count,
             "data_policy": "In-memory telemetry only; no direct camera polling.",
         }
 
@@ -511,6 +546,8 @@ class TapoEventBridgeRuntime:
             "mapped_light_count": sum(len(item["lights"]) for item in targets),
             "trigger_count": self.person_lighting_trigger_count,
             "last_trigger": self.last_person_lighting_trigger,
+            "unmapped_person_event_count": self.unmapped_person_event_count,
+            "last_unmapped_person_event": self.last_unmapped_person_event,
             "targets": targets[:12],
             "data_policy": (
                 "Uses existing Home Assistant person events and light services only; "
@@ -540,8 +577,21 @@ class TapoEventBridgeRuntime:
         self.person_lighting_trigger_count += 1
         self.last_person_lighting_trigger = {
             "camera_id": event.camera_id,
+            "camera_name": self.camera_name_for_event(event),
+            "event_type": event.event_type.value,
             "occurred_at": event.occurred_at.isoformat(),
             "lights": list(entity_ids),
+        }
+        self._notify_listeners()
+
+    def note_unmapped_person_event(self, event: CameraEvent) -> None:
+        """Record a person event that had no safe light mapping."""
+        self.unmapped_person_event_count += 1
+        self.last_unmapped_person_event = {
+            "camera_id": event.camera_id,
+            "camera_name": self.camera_name_for_event(event),
+            "source_entity_id": event.metadata.get("source_entity_id"),
+            "occurred_at": event.occurred_at.isoformat(),
         }
         self._notify_listeners()
 

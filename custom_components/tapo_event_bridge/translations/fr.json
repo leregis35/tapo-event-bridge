@@ -29,7 +29,7 @@
         "name": "Dernier événement"
       },
       "last_event_source": {
-        "name": "Source du dernier événement"
+        "name": "Caméra du dernier événement"
       },
       "last_event_latency": {
         "name": "Latence du dernier événement"
@@ -72,6 +72,12 @@
       },
       "person_lighting_status": {
         "name": "Éclairage sur détection humaine"
+      },
+      "last_event_transport": {
+        "name": "Transport du dernier événement"
+      },
+      "last_event_summary": {
+        "name": "Dernière détection détaillée"
       }
     },
     "binary_sensor": {
