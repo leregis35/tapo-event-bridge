@@ -71,6 +71,36 @@ class CameraInventorySensor(BridgeSensor):
         }
 
 
+class CapabilityExplorerSensor(BridgeSensor):
+    """Expose a detailed, evidence-labelled profile for every camera."""
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return privacy-safe camera profiles derived from HA registries."""
+        runtime = self._runtime
+        return {
+            "camera_count": len(runtime.cameras),
+            "entity_count": runtime.entity_count,
+            "observed_capability_count": runtime.capability_count,
+            "average_camera_health": runtime.average_camera_health,
+            "last_scan": (
+                None
+                if runtime.last_discovery_at is None
+                else runtime.last_discovery_at.isoformat()
+            ),
+            "scan_duration_ms": runtime.last_discovery_duration_ms,
+            "last_error": runtime.last_discovery_error,
+            "evidence_policy": {
+                "observed": "Visible in Home Assistant registries.",
+                "unknown": "Not exposed by Home Assistant; not assumed false.",
+            },
+            "cameras": [
+                camera.explorer_summary()
+                for _, camera in sorted(runtime.cameras.items())
+            ],
+        }
+
+
 def _latest_event_type(runtime: TapoEventBridgeRuntime) -> str:
     event = runtime.latest_event
     return "none" if event is None else event.event_type.value
@@ -123,6 +153,12 @@ async def async_setup_entry(
                 entry_id,
                 "capability_count",
                 lambda value: value.capability_count,
+            ),
+            CapabilityExplorerSensor(
+                runtime,
+                entry_id,
+                "capability_explorer",
+                lambda value: value.capability_explorer_state,
             ),
             BridgeSensor(
                 runtime,

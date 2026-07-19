@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0 - Capability Explorer
+
+- Added a dedicated Capability Explorer sensor with one detailed profile per camera.
+- Added evidence-labelled capability data without network polling or device wake-ups.
+- Added per-camera power-source labels and registry-evidence health scores.
+- Added average camera health and scan metadata to Home Assistant attributes.
+- Kept identifiers privacy-safe and preserved unknown values instead of guessing.
+
 ## 0.5.1 - Official branding
 
 - Added the official Tapo Event Bridge icon and logo.

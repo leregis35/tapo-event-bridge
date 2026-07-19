@@ -48,6 +48,9 @@
       },
       "discovery_duration": {
         "name": "Discovery duration"
+      },
+      "capability_explorer": {
+        "name": "Capability Explorer"
       }
     },
     "binary_sensor": {

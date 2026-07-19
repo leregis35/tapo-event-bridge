@@ -61,6 +61,25 @@ class TapoEventBridgeRuntime:
         return sum(len(camera.capabilities) for camera in self.cameras.values())
 
     @property
+    def capability_explorer_state(self) -> str:
+        """Return the high-level state of the Capability Explorer."""
+        if self.last_discovery_error:
+            return "error"
+        if self.status == "discovering":
+            return "scanning"
+        if not self.cameras:
+            return "no_cameras"
+        return "ready"
+
+    @property
+    def average_camera_health(self) -> int | None:
+        """Return the average registry-evidence completeness score."""
+        cameras = tuple(self.cameras.values())
+        if not cameras:
+            return None
+        return round(sum(camera.health_score for camera in cameras) / len(cameras))
+
+    @property
     def health_score(self) -> int:
         """Return a conservative runtime health score from observable state."""
         if self.last_discovery_error:

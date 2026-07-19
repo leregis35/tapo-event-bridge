@@ -87,6 +87,63 @@ class CameraDiagnostic:
         }
         return data
 
+    @property
+    def power_source(self) -> str:
+        """Return a conservative power-source label from observed evidence."""
+        if self.solar_powered.value is True:
+            return "solar"
+        if self.battery_powered.value is True:
+            return "battery"
+        return "unknown"
+
+    @property
+    def health_score(self) -> int:
+        """Return a registry-evidence completeness score for this camera."""
+        score = 40
+        if self.name:
+            score += 10
+        if self.model.value:
+            score += 15
+        if self.firmware.value:
+            score += 10
+        if self.entity_count:
+            score += 15
+        if self.capabilities:
+            score += 10
+        return min(score, 100)
+
+    def capability_details(self) -> dict[str, dict[str, Any]]:
+        """Return sorted capability evidence suitable for HA attributes."""
+        return {
+            name: fact.as_dict()
+            for name, fact in sorted(self.capabilities.items())
+        }
+
+    def explorer_summary(self) -> dict[str, Any]:
+        """Return the detailed, privacy-safe Capability Explorer profile."""
+        return {
+            "identifier": self.identifier,
+            "name": self.name,
+            "manufacturer": self.manufacturer.as_dict(),
+            "model": self.model.as_dict(),
+            "firmware": self.firmware.as_dict(),
+            "hardware_version": self.hardware_version.as_dict(),
+            "power_source": self.power_source,
+            "battery_powered": self.battery_powered.as_dict(),
+            "solar_powered": self.solar_powered.as_dict(),
+            "local_api": self.local_api.as_dict(),
+            "cloud_api": self.cloud_api.as_dict(),
+            "rtsp": self.rtsp.as_dict(),
+            "onvif": self.onvif.as_dict(),
+            "health_score": self.health_score,
+            "entity_count": self.entity_count,
+            "enabled_entity_count": self.enabled_entity_count,
+            "disabled_entity_count": self.disabled_entity_count,
+            "entity_domains": dict(sorted(self.entity_domains.items())),
+            "platforms": list(self.source_platforms),
+            "capabilities": self.capability_details(),
+        }
+
     def summary(self) -> dict[str, Any]:
         """Return a compact Home Assistant state-attribute representation."""
         return {
@@ -95,6 +152,8 @@ class CameraDiagnostic:
             "manufacturer": self.manufacturer.value,
             "model": self.model.value,
             "firmware": self.firmware.value,
+            "power_source": self.power_source,
+            "health_score": self.health_score,
             "entity_count": self.entity_count,
             "enabled_entity_count": self.enabled_entity_count,
             "disabled_entity_count": self.disabled_entity_count,
