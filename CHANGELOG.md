@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.1 - Official branding
+
+- Added the official Tapo Event Bridge icon and logo.
+- Added light and dark Home Assistant brand assets, including 2x variants.
+- Added repository banner and icon assets.
+- No runtime, polling, or camera behavior changes.
+
 ## 0.5.0 - Real Discovery
 
 - Added live camera inventory attributes to the camera-count sensor.
