@@ -57,6 +57,9 @@
       },
       "event_activity": {
         "name": "Activité des événements"
+      },
+      "dashboard_snapshot": {
+        "name": "Vue tableau de bord"
       }
     },
     "binary_sensor": {

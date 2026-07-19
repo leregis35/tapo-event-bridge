@@ -89,6 +89,15 @@ class FleetInsightsSensor(BridgeSensor):
         return self._runtime.fleet_insights
 
 
+class DashboardSnapshotSensor(BridgeSensor):
+    """Expose a stable payload designed for Lovelace presentation."""
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the dashboard schema without triggering camera I/O."""
+        return self._runtime.dashboard_snapshot
+
+
 class CapabilityExplorerSensor(BridgeSensor):
     """Expose a detailed, evidence-labelled profile for every camera."""
 
@@ -216,6 +225,12 @@ async def async_setup_entry(
                 entry_id,
                 "event_activity",
                 lambda value: value.recorded_event_count,
+            ),
+            DashboardSnapshotSensor(
+                runtime,
+                entry_id,
+                "dashboard_snapshot",
+                lambda value: str(value.dashboard_snapshot["fleet_grade"]),
             ),
             BridgeSensor(
                 runtime,

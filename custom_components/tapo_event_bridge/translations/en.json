@@ -57,6 +57,9 @@
       },
       "event_activity": {
         "name": "Event activity"
+      },
+      "dashboard_snapshot": {
+        "name": "Dashboard snapshot"
       }
     },
     "binary_sensor": {

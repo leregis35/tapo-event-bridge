@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.0 - Dashboard Foundation
+
+- Added a versioned dashboard snapshot sensor with compact fleet and event data.
+- Added a dependency-free Lovelace dashboard example using native cards.
+- Kept the dashboard path push-driven and free of direct camera polling.
+- Added dashboard schema tests and bilingual documentation.
+
 ## 0.8.0 - Home Assistant Event Bridge
 
 - Subscribed only to discovered Tapo camera and binary-sensor entities.

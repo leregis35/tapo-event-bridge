@@ -212,6 +212,57 @@ class TapoEventBridgeRuntime:
         }
 
     @property
+    def dashboard_snapshot(self) -> dict[str, object]:
+        """Return a stable, compact schema for Lovelace dashboards."""
+        insights = self.fleet_insights
+        activity = self.event_activity
+        latest = self.latest_event
+        cameras = [
+            {
+                "identifier": camera.identifier,
+                "name": camera.name,
+                "model": camera.model.value,
+                "power_source": camera.power_source,
+                "health_score": camera.health_score,
+                "entity_count": camera.entity_count,
+                "capabilities": sorted(camera.capabilities),
+                "active_events": activity["active_events"].get(
+                    camera.identifier, []
+                ),
+                "event_count": activity["by_camera"].get(camera.identifier, 0),
+            }
+            for _, camera in sorted(self.cameras.items())
+        ]
+        return {
+            "schema_version": 1,
+            "status": self.status,
+            "health_score": self.health_score,
+            "fleet_grade": insights["grade"],
+            "camera_count": len(cameras),
+            "entity_count": self.entity_count,
+            "capability_count": self.capability_count,
+            "recorded_event_count": self.recorded_event_count,
+            "active_event_count": sum(
+                len(types) for types in activity["active_events"].values()
+            ),
+            "last_event": None if latest is None else latest.as_dict(),
+            "event_types": activity["by_type"],
+            "power_distribution": insights["power_distribution"],
+            "capability_coverage_percent": insights[
+                "capability_coverage_percent"
+            ],
+            "cameras_needing_attention": insights[
+                "cameras_needing_attention"
+            ],
+            "last_scan": insights["last_scan"],
+            "scan_duration_ms": insights["scan_duration_ms"],
+            "cameras": cameras,
+            "data_policy": (
+                "Registry and Home Assistant state events only; no direct polling."
+            ),
+        }
+
+    @property
     def health_score(self) -> int:
         """Return a conservative runtime health score from observable state."""
         if self.last_discovery_error:

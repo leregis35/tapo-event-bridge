@@ -1,0 +1,50 @@
+title: Tapo Event Bridge
+views:
+  - title: Fleet
+    path: tapo-event-bridge
+    icon: mdi:cctv
+    cards:
+      - type: markdown
+        content: |
+          # Tapo Event Bridge
+          Native fleet diagnostics and event activity.
+      - type: grid
+        columns: 3
+        square: false
+        cards:
+          - type: tile
+            entity: sensor.tapo_event_bridge_status
+            name: Runtime
+          - type: tile
+            entity: sensor.tapo_event_bridge_camera_count
+            name: Cameras
+          - type: tile
+            entity: sensor.tapo_event_bridge_health_score
+            name: Health
+          - type: tile
+            entity: sensor.tapo_event_bridge_fleet_insights
+            name: Fleet grade
+          - type: tile
+            entity: sensor.tapo_event_bridge_recorded_event_count
+            name: Events in memory
+          - type: tile
+            entity: sensor.tapo_event_bridge_last_event
+            name: Last event
+      - type: entities
+        title: Discovery
+        entities:
+          - sensor.tapo_event_bridge_entity_count
+          - sensor.tapo_event_bridge_capability_count
+          - sensor.tapo_event_bridge_last_discovery
+          - sensor.tapo_event_bridge_discovery_duration
+      - type: entities
+        title: Explorer payloads
+        entities:
+          - sensor.tapo_event_bridge_dashboard_snapshot
+          - sensor.tapo_event_bridge_capability_explorer
+          - sensor.tapo_event_bridge_event_activity
+      - type: entities
+        title: Actions
+        entities:
+          - button.tapo_event_bridge_rediscover_cameras
+          - button.tapo_event_bridge_replay_last_event
