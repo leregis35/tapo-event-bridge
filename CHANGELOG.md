@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0 - Production Foundation
+
+- Added duplicate-event suppression for noisy Home Assistant state sources.
+- Added runtime uptime, buffer, listener, transport, and suppression telemetry.
+- Added a diagnostic action to clear the bounded in-memory event history.
+- Stabilized the dashboard schema introduced in 0.9.0.
+- Preserved the battery-safe, registry/event-driven architecture with no direct polling.
+- Cleaned generated caches and virtual environments from the release archive.
+
 ## 0.9.0 - Dashboard Foundation
 
 - Added a versioned dashboard snapshot sensor with compact fleet and event data.

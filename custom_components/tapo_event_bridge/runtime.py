@@ -20,6 +20,7 @@ class TapoEventBridgeRuntime:
     """Runtime data attached to the Home Assistant config entry."""
 
     status: str = "starting"
+    started_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     registry: CameraRegistry = field(default_factory=CameraRegistry)
     event_engine: EventEngine = field(default_factory=EventEngine)
     transports: list[str] = field(default_factory=list)
@@ -59,6 +60,31 @@ class TapoEventBridgeRuntime:
     def capability_count(self) -> int:
         """Return the total number of observed camera capabilities."""
         return sum(len(camera.capabilities) for camera in self.cameras.values())
+
+
+    @property
+    def uptime_seconds(self) -> int:
+        """Return runtime uptime in whole seconds."""
+        return max(0, int((datetime.now(UTC) - self.started_at).total_seconds()))
+
+    @property
+    def runtime_metrics(self) -> dict[str, object]:
+        """Return stable runtime telemetry for diagnostics and dashboards."""
+        return {
+            "started_at": self.started_at.isoformat(),
+            "uptime_seconds": self.uptime_seconds,
+            "status": self.status,
+            "camera_count": len(self.cameras),
+            "entity_count": self.entity_count,
+            "recorded_event_count": self.recorded_event_count,
+            "event_buffer_limit": self.event_engine.recorder.max_events,
+            "suppressed_duplicate_count": self.event_engine.duplicate_count,
+            "duplicate_window_seconds": self.event_engine.duplicate_window_seconds,
+            "listener_count": len(self._listeners),
+            "cleanup_callback_count": len(self._cleanup_callbacks),
+            "active_transports": tuple(self.transports),
+            "data_policy": "In-memory telemetry only; no direct camera polling.",
+        }
 
     @property
     def capability_explorer_state(self) -> str:
@@ -333,9 +359,10 @@ class TapoEventBridgeRuntime:
 
     async def publish_event(self, event: CameraEvent) -> None:
         """Publish one normalized event through the runtime engine."""
-        await self.event_engine.publish(event)
-        self.status = "event_ready"
-        self._notify_listeners()
+        accepted = await self.event_engine.publish(event)
+        if accepted:
+            self.status = "event_ready"
+            self._notify_listeners()
 
     async def replay_last_event(self) -> CameraEvent | None:
         """Replay the newest non-replay event once."""
@@ -353,6 +380,12 @@ class TapoEventBridgeRuntime:
         replayed = original.as_replay()
         await self.publish_event(replayed)
         return replayed
+
+
+    def clear_events(self) -> None:
+        """Clear the bounded event history and notify entity listeners."""
+        self.event_engine.clear()
+        self._notify_listeners()
 
     def close(self) -> None:
         """Release subscriptions and runtime callbacks."""

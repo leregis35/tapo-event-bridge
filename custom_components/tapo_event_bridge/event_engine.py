@@ -1,4 +1,4 @@
-"""Low-overhead event recording, dispatch, and replay."""
+"""Low-overhead event recording, de-duplication, dispatch, and replay."""
 
 from __future__ import annotations
 
@@ -6,10 +6,12 @@ import inspect
 from collections import deque
 from collections.abc import Awaitable, Callable, Iterable
 from dataclasses import dataclass, field
+from datetime import datetime
 
-from .events import CameraEvent, EventType
+from .events import CameraEvent, EventSource, EventType
 
 type EventCallback = Callable[[CameraEvent], Awaitable[None] | None]
+type EventSignature = tuple[str, EventType, object, EventSource]
 
 
 @dataclass(slots=True)
@@ -64,8 +66,18 @@ class EventEngine:
 
     recorder: EventRecorder = field(default_factory=EventRecorder)
     developer_mode: bool = False
+    duplicate_window_seconds: float = 1.0
+    duplicate_count: int = 0
     _subscribers: dict[int, EventCallback] = field(default_factory=dict, repr=False)
     _next_subscription_id: int = field(default=1, repr=False)
+    _last_signatures: dict[EventSignature, datetime] = field(
+        default_factory=dict,
+        repr=False,
+    )
+
+    def __post_init__(self) -> None:
+        if self.duplicate_window_seconds < 0:
+            raise ValueError("duplicate_window_seconds must not be negative")
 
     def subscribe(self, callback: EventCallback) -> Callable[[], None]:
         """Register a callback and return an idempotent unsubscribe function."""
@@ -78,13 +90,22 @@ class EventEngine:
 
         return unsubscribe
 
-    async def publish(self, event: CameraEvent) -> None:
-        """Record and dispatch an event to a stable subscriber snapshot."""
+    async def publish(self, event: CameraEvent) -> bool:
+        """Record and dispatch a non-duplicate event.
+
+        Return ``True`` when the event was accepted and ``False`` when it was
+        suppressed as a short-window duplicate.
+        """
+        if self._is_duplicate(event):
+            self.duplicate_count += 1
+            return False
+
         self.recorder.record(event)
         for callback in tuple(self._subscribers.values()):
             result = callback(event)
             if inspect.isawaitable(result):
                 await result
+        return True
 
     async def replay(
         self,
@@ -104,6 +125,11 @@ class EventEngine:
             await self.publish(event)
         return replayed
 
+    def clear(self) -> None:
+        """Clear retained events and duplicate-tracking state."""
+        self.recorder.clear()
+        self._last_signatures.clear()
+
     def diagnostic_snapshot(self) -> dict[str, object]:
         """Return an anonymized event-engine status snapshot."""
         latest = self.recorder.snapshot(limit=20 if self.developer_mode else 5)
@@ -111,5 +137,26 @@ class EventEngine:
             "developer_mode": self.developer_mode,
             "recorded_event_count": len(self.recorder),
             "subscriber_count": len(self._subscribers),
+            "duplicate_window_seconds": self.duplicate_window_seconds,
+            "suppressed_duplicate_count": self.duplicate_count,
             "recent_events": [event.as_dict() for event in latest],
         }
+
+    def _is_duplicate(self, event: CameraEvent) -> bool:
+        """Return whether an event repeats the same observed transition."""
+        if event.source is EventSource.REPLAY or self.duplicate_window_seconds == 0:
+            return False
+
+        signature: EventSignature = (
+            event.camera_id,
+            event.event_type,
+            event.state,
+            event.source,
+        )
+        previous = self._last_signatures.get(signature)
+        self._last_signatures[signature] = event.received_at
+        if previous is None:
+            return False
+
+        elapsed = (event.received_at - previous).total_seconds()
+        return 0 <= elapsed <= self.duplicate_window_seconds

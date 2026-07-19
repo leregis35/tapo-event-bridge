@@ -51,6 +51,22 @@ class ReplayLastEventButton(TapoEventBridgeEntity, ButtonEntity):
         await self._runtime.replay_last_event()
 
 
+class ClearEventHistoryButton(TapoEventBridgeEntity, ButtonEntity):
+    """Clear the bounded in-memory event history."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_translation_key = "clear_event_history"
+
+    @property
+    def available(self) -> bool:
+        """Return true when the event buffer contains data."""
+        return self._runtime.recorded_event_count > 0
+
+    async def async_press(self) -> None:
+        """Clear retained events without touching Home Assistant history."""
+        self._runtime.clear_events()
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: TapoEventBridgeConfigEntry,
@@ -70,6 +86,11 @@ async def async_setup_entry(
                 runtime,
                 entry_id,
                 "replay_last_event",
+            ),
+            ClearEventHistoryButton(
+                runtime,
+                entry_id,
+                "clear_event_history",
             ),
         )
     )

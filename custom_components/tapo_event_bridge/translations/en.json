@@ -60,6 +60,9 @@
       },
       "dashboard_snapshot": {
         "name": "Dashboard snapshot"
+      },
+      "runtime_metrics": {
+        "name": "Runtime metrics"
       }
     },
     "binary_sensor": {
@@ -76,6 +79,9 @@
       },
       "replay_last_event": {
         "name": "Replay last event"
+      },
+      "clear_event_history": {
+        "name": "Clear event history"
       }
     }
   }

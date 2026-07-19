@@ -1,42 +1,45 @@
 # Tapo Event Bridge
 
-Experimental Home Assistant custom integration focused on reliable, normalized
-Tapo camera events.
+Home Assistant companion integration for normalized Tapo camera events,
+registry-based discovery, fleet diagnostics and dashboard-ready analytics.
 
-> Current status: Sprint 5 Home Assistant entities. The bridge now exposes its
-> discovery and event-engine state as native push-updated entities, while real
-> camera event transports remain the next milestone.
+## Version 1.0
 
-## What 0.4.0 does
+Tapo Event Bridge 1.0 establishes the first stable project contract:
 
-- Discovers Tapo/TP-Link cameras from Home Assistant registries without polling.
-- Provides native diagnostic sensors for status, camera count, retained events,
-  active transports, latest event, source, and latency.
-- Provides binary sensors for bridge health and camera discovery.
-- Provides buttons for registry-only rediscovery and safe replay of the latest
-  original event.
-- Fires normalized events on the Home Assistant event bus as
-  `tapo_event_bridge_event`.
-- Records events in a bounded in-memory buffer with no disk writes.
-- Exports privacy-conscious config-entry diagnostics.
-- Performs no direct camera request and no battery-camera wakeup.
+- discovers TP-Link/Tapo cameras from Home Assistant registries;
+- normalizes existing Home Assistant camera and detection state changes;
+- publishes `tapo_event_bridge_event` on the Home Assistant event bus;
+- retains a bounded in-memory event buffer with duplicate suppression;
+- exposes camera inventory, capability, fleet and dashboard diagnostics;
+- provides runtime telemetry and diagnostic actions;
+- performs no direct camera polling and does not intentionally wake battery
+  cameras.
 
-## Resource policy
+## Native Home Assistant entities
 
-Entities are push-updated from runtime listeners. There is no entity polling,
-background task, disk write, or automatic camera-network request. Rediscovery
-reads Home Assistant registries only and runs at startup or when requested.
+The integration provides sensors for runtime status, camera inventory,
+capabilities, fleet intelligence, event activity, dashboard data and runtime
+metrics. It also provides diagnostic binary sensors and buttons for rediscovery,
+replay and clearing the in-memory event buffer.
+
+## Resource and privacy policy
+
+Entities are push-updated from runtime listeners. Registry discovery runs at
+startup or on demand. Event processing is in memory, bounded and local. The
+integration does not make direct camera requests, write its own database or
+store raw camera payloads in diagnostics.
 
 ## Home Assistant event
 
-Normalized events are emitted on the Home Assistant event bus:
+Normalized events are emitted as:
 
 ```text
 tapo_event_bridge_event
 ```
 
 The payload contains normalized type, source, state, timestamps, confidence,
-latency, and privacy-conscious metadata.
+latency and privacy-conscious metadata.
 
 ## Development checks
 
@@ -48,4 +51,4 @@ uv run pytest
 
 ## Test camera lab
 
-C211, C220, C425, C520WS ×2, and C660.
+C211, C220, C425, C520WS ×2 and C660.

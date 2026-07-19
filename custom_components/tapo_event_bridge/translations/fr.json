@@ -60,6 +60,9 @@
       },
       "dashboard_snapshot": {
         "name": "Vue tableau de bord"
+      },
+      "runtime_metrics": {
+        "name": "Métriques d’exécution"
       }
     },
     "binary_sensor": {
@@ -76,6 +79,9 @@
       },
       "replay_last_event": {
         "name": "Rejouer le dernier événement"
+      },
+      "clear_event_history": {
+        "name": "Effacer l’historique des événements"
       }
     }
   }

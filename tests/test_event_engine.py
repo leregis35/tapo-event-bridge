@@ -114,3 +114,42 @@ def test_diagnostic_snapshot_expands_in_developer_mode() -> None:
 
     engine.developer_mode = True
     assert len(engine.diagnostic_snapshot()["recent_events"]) == 10
+
+
+def test_engine_suppresses_short_window_duplicates() -> None:
+    engine = EventEngine(duplicate_window_seconds=1.0)
+    first = make_event("garage", EventType.MOTION)
+    duplicate = CameraEvent(
+        camera_id=first.camera_id,
+        event_type=first.event_type,
+        source=first.source,
+        state=first.state,
+        occurred_at=first.occurred_at,
+        received_at=first.received_at,
+    )
+
+    assert asyncio.run(engine.publish(first)) is True
+    assert asyncio.run(engine.publish(duplicate)) is False
+    assert len(engine.recorder) == 1
+    assert engine.duplicate_count == 1
+
+
+def test_replay_bypasses_duplicate_suppression() -> None:
+    engine = EventEngine(duplicate_window_seconds=60.0)
+    asyncio.run(engine.publish(make_event("garage", EventType.PERSON)))
+
+    replayed = asyncio.run(engine.replay(limit=1))
+
+    assert len(replayed) == 1
+    assert len(engine.recorder) == 2
+
+
+def test_clear_resets_history_and_signature_cache() -> None:
+    engine = EventEngine()
+    event = make_event("garage", EventType.MOTION)
+    asyncio.run(engine.publish(event))
+
+    engine.clear()
+
+    assert len(engine.recorder) == 0
+    assert asyncio.run(engine.publish(event)) is True

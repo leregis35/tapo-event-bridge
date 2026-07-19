@@ -98,6 +98,15 @@ class DashboardSnapshotSensor(BridgeSensor):
         return self._runtime.dashboard_snapshot
 
 
+class RuntimeMetricsSensor(BridgeSensor):
+    """Expose lightweight runtime telemetry for production diagnostics."""
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return stable, in-memory runtime metrics."""
+        return self._runtime.runtime_metrics
+
+
 class CapabilityExplorerSensor(BridgeSensor):
     """Expose a detailed, evidence-labelled profile for every camera."""
 
@@ -231,6 +240,13 @@ async def async_setup_entry(
                 entry_id,
                 "dashboard_snapshot",
                 lambda value: str(value.dashboard_snapshot["fleet_grade"]),
+            ),
+            RuntimeMetricsSensor(
+                runtime,
+                entry_id,
+                "runtime_metrics",
+                lambda value: value.uptime_seconds,
+                native_unit=UnitOfTime.SECONDS,
             ),
             BridgeSensor(
                 runtime,
