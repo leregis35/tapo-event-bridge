@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from .const import EVENT_CAMERA, PLATFORMS
 from .discovery import async_discover_cameras
 from .ha_event_bridge import async_subscribe_home_assistant_events
+from .person_lighting import async_setup_person_lighting
 from .runtime import TapoEventBridgeRuntime
 
 if TYPE_CHECKING:
@@ -42,6 +43,7 @@ async def async_setup_entry(
     runtime.add_cleanup_callback(
         await async_subscribe_home_assistant_events(hass, runtime)
     )
+    runtime.add_cleanup_callback(await async_setup_person_lighting(hass, runtime))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 

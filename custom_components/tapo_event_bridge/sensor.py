@@ -116,6 +116,15 @@ class DashboardSnapshotSensor(BridgeSensor):
         return self._runtime.dashboard_snapshot
 
 
+class PersonLightingStatusSensor(BridgeSensor):
+    """Expose person-detection lighting mappings and activity."""
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return Recorder-safe person-lighting status."""
+        return self._runtime.person_lighting_status
+
+
 class RuntimeMetricsSensor(BridgeSensor):
     """Expose lightweight runtime telemetry for production diagnostics."""
 
@@ -248,6 +257,14 @@ async def async_setup_entry(
                 entry_id,
                 "dashboard_snapshot",
                 lambda value: str(value.dashboard_snapshot["fleet_grade"]),
+            ),
+            PersonLightingStatusSensor(
+                runtime,
+                entry_id,
+                "person_lighting_status",
+                lambda value: (
+                    "enabled" if value.person_lighting_enabled else "disabled"
+                ),
             ),
             RuntimeMetricsSensor(
                 runtime,

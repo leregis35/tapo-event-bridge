@@ -37,6 +37,11 @@ class TapoEventBridgeRuntime:
     journal_camera_filter: str = "all"
     journal_event_type_filter: str = "all"
     journal_limit: int = 25
+    person_lighting_enabled: bool = False
+    person_lighting_duration_seconds: int = 120
+    person_light_targets: dict[str, tuple[str, ...]] = field(default_factory=dict)
+    person_lighting_trigger_count: int = 0
+    last_person_lighting_trigger: dict[str, object] | None = None
 
     @property
     def cameras(self) -> dict[str, CameraDiagnostic]:
@@ -85,6 +90,11 @@ class TapoEventBridgeRuntime:
             "listener_count": len(self._listeners),
             "cleanup_callback_count": len(self._cleanup_callbacks),
             "active_transports": tuple(self.transports),
+            "person_lighting_enabled": self.person_lighting_enabled,
+            "person_lighting_target_count": sum(
+                len(targets) for targets in self.person_light_targets.values()
+            ),
+            "person_lighting_trigger_count": self.person_lighting_trigger_count,
             "data_policy": "In-memory telemetry only; no direct camera polling.",
         }
 
@@ -479,6 +489,61 @@ class TapoEventBridgeRuntime:
         if not self.cameras:
             return 60
         return 100
+
+    @property
+    def person_lighting_status(self) -> dict[str, object]:
+        """Return a compact status payload for person-detection lighting."""
+        camera_names = {
+            identifier: camera.name for identifier, camera in self.cameras.items()
+        }
+        targets = [
+            {
+                "camera_id": camera_id,
+                "camera_name": camera_names.get(camera_id),
+                "lights": list(entity_ids),
+            }
+            for camera_id, entity_ids in sorted(self.person_light_targets.items())
+        ]
+        return {
+            "enabled": self.person_lighting_enabled,
+            "duration_seconds": self.person_lighting_duration_seconds,
+            "mapped_camera_count": len(targets),
+            "mapped_light_count": sum(len(item["lights"]) for item in targets),
+            "trigger_count": self.person_lighting_trigger_count,
+            "last_trigger": self.last_person_lighting_trigger,
+            "targets": targets[:12],
+            "data_policy": (
+                "Uses existing Home Assistant person events and light services only; "
+                "no camera polling or wake-up."
+            ),
+        }
+
+    def set_person_lighting_enabled(self, enabled: bool) -> None:
+        """Enable or disable person-detection lighting."""
+        self.person_lighting_enabled = enabled
+        self._notify_listeners()
+
+    def set_person_lighting_duration(self, seconds: int) -> None:
+        """Set the light-on duration within safe bounds."""
+        if not 10 <= seconds <= 900:
+            msg = "Person lighting duration must be between 10 and 900 seconds"
+            raise ValueError(msg)
+        self.person_lighting_duration_seconds = seconds
+        self._notify_listeners()
+
+    def note_person_lighting_trigger(
+        self,
+        event: CameraEvent,
+        entity_ids: tuple[str, ...],
+    ) -> None:
+        """Record one successful person-lighting trigger."""
+        self.person_lighting_trigger_count += 1
+        self.last_person_lighting_trigger = {
+            "camera_id": event.camera_id,
+            "occurred_at": event.occurred_at.isoformat(),
+            "lights": list(entity_ids),
+        }
+        self._notify_listeners()
 
     def subscribe(self, listener: RuntimeListener) -> Callable[[], None]:
         """Subscribe to runtime changes and return an idempotent unsubscribe."""

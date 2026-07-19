@@ -69,6 +69,9 @@
       },
       "fleet_overview": {
         "name": "Centre de supervision du parc"
+      },
+      "person_lighting_status": {
+        "name": "Éclairage sur détection humaine"
       }
     },
     "binary_sensor": {
@@ -96,6 +99,16 @@
       },
       "journal_event_type_filter": {
         "name": "Filtre type d’événement du journal"
+      }
+    },
+    "switch": {
+      "person_lighting": {
+        "name": "Éclairage sur détection humaine"
+      }
+    },
+    "number": {
+      "person_lighting_duration": {
+        "name": "Durée d'éclairage après détection"
       }
     }
   }

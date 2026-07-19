@@ -69,6 +69,9 @@
       },
       "fleet_overview": {
         "name": "Fleet command center"
+      },
+      "person_lighting_status": {
+        "name": "Person lighting status"
       }
     },
     "binary_sensor": {
@@ -96,6 +99,16 @@
       },
       "journal_event_type_filter": {
         "name": "Journal event type filter"
+      }
+    },
+    "switch": {
+      "person_lighting": {
+        "name": "Person detection lighting"
+      }
+    },
+    "number": {
+      "person_lighting_duration": {
+        "name": "Person lighting duration"
       }
     }
   }

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.0 - Person Lighting Bridge
+
+- Added automatic mapping of camera-local Home Assistant light entities.
+- Added an opt-in switch to turn lights on for normalized person events.
+- Added a configurable 10-900 second light-on duration with timer reset.
+- Added compact status and trigger diagnostics.
+- Replayed events never actuate lights; no camera polling or wake-up is added.
+
+
 ## 1.2.0 - Fleet Command Center
 
 - Added a Recorder-safe fleet supervision sensor.
