@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.1 - Recorder-safe Capability Explorer
+
+- Reduced Capability Explorer state attributes below Home Assistant Recorder limits.
+- Kept detailed evidence in downloadable Home Assistant diagnostics.
+- Added deterministic camera and capability bounds for future large fleets.
+- Added regression tests for attribute payload size and diagnostic completeness.
+
+
 ## 1.0.0 - Production Foundation
 
 - Added duplicate-event suppression for noisy Home Assistant state sources.

@@ -144,6 +144,29 @@ class CameraDiagnostic:
             "capabilities": self.capability_details(),
         }
 
+    def recorder_summary(
+        self,
+        *,
+        max_capabilities: int = 32,
+    ) -> dict[str, Any]:
+        """Return a size-bounded profile safe for Recorder attributes."""
+        capabilities = sorted(self.capabilities)
+        return {
+            "identifier": self.identifier,
+            "name": self.name,
+            "model": self.model.value,
+            "firmware": self.firmware.value,
+            "hardware_version": self.hardware_version.value,
+            "power_source": self.power_source,
+            "health_score": self.health_score,
+            "entity_count": self.entity_count,
+            "enabled_entity_count": self.enabled_entity_count,
+            "disabled_entity_count": self.disabled_entity_count,
+            "platforms": list(self.source_platforms),
+            "capabilities": capabilities[:max_capabilities],
+            "capabilities_truncated": len(capabilities) > max_capabilities,
+        }
+
     def summary(self) -> dict[str, Any]:
         """Return a compact Home Assistant state-attribute representation."""
         return {

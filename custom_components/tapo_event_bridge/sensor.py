@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import EntityCategory, UnitOfTime
 
+from .attributes import build_capability_explorer_attributes
 from .entity import TapoEventBridgeEntity
 
 if TYPE_CHECKING:
@@ -112,29 +113,9 @@ class CapabilityExplorerSensor(BridgeSensor):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        """Return privacy-safe camera profiles derived from HA registries."""
-        runtime = self._runtime
-        return {
-            "camera_count": len(runtime.cameras),
-            "entity_count": runtime.entity_count,
-            "observed_capability_count": runtime.capability_count,
-            "average_camera_health": runtime.average_camera_health,
-            "last_scan": (
-                None
-                if runtime.last_discovery_at is None
-                else runtime.last_discovery_at.isoformat()
-            ),
-            "scan_duration_ms": runtime.last_discovery_duration_ms,
-            "last_error": runtime.last_discovery_error,
-            "evidence_policy": {
-                "observed": "Visible in Home Assistant registries.",
-                "unknown": "Not exposed by Home Assistant; not assumed false.",
-            },
-            "cameras": [
-                camera.explorer_summary()
-                for _, camera in sorted(runtime.cameras.items())
-            ],
-        }
+        """Return a compact profile safe for Home Assistant Recorder."""
+        return build_capability_explorer_attributes(self._runtime)
+
 
 
 def _latest_event_type(runtime: TapoEventBridgeRuntime) -> str:
