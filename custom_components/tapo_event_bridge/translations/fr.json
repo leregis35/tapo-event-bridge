@@ -51,6 +51,9 @@
       },
       "capability_explorer": {
         "name": "Explorateur de capacités"
+      },
+      "fleet_insights": {
+        "name": "Analyse du parc"
       }
     },
     "binary_sensor": {

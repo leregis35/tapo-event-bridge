@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.0 - Fleet Intelligence
+
+- Added registry-only fleet analytics and a fleet quality grade.
+- Added model, power-source, platform, entity-domain, and capability coverage summaries.
+- Added a conservative attention list for cameras with incomplete evidence.
+- Kept analysis local and passive: no network polling and no battery-camera wake-up.
+
 ## 0.6.0 - Capability Explorer
 
 - Added a dedicated Capability Explorer sensor with one detailed profile per camera.

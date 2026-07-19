@@ -71,6 +71,15 @@ class CameraInventorySensor(BridgeSensor):
         }
 
 
+class FleetInsightsSensor(BridgeSensor):
+    """Expose fleet-wide analytics without querying any camera."""
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return deterministic analytics computed from registry evidence."""
+        return self._runtime.fleet_insights
+
+
 class CapabilityExplorerSensor(BridgeSensor):
     """Expose a detailed, evidence-labelled profile for every camera."""
 
@@ -153,6 +162,13 @@ async def async_setup_entry(
                 entry_id,
                 "capability_count",
                 lambda value: value.capability_count,
+            ),
+
+            FleetInsightsSensor(
+                runtime,
+                entry_id,
+                "fleet_insights",
+                lambda value: str(value.fleet_insights["grade"]),
             ),
             CapabilityExplorerSensor(
                 runtime,

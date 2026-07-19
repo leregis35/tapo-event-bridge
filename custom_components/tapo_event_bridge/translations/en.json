@@ -51,6 +51,9 @@
       },
       "capability_explorer": {
         "name": "Capability Explorer"
+      },
+      "fleet_insights": {
+        "name": "Fleet Insights"
       }
     },
     "binary_sensor": {

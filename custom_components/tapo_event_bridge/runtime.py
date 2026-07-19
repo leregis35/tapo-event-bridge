@@ -79,6 +79,99 @@ class TapoEventBridgeRuntime:
             return None
         return round(sum(camera.health_score for camera in cameras) / len(cameras))
 
+
+    @property
+    def fleet_insights(self) -> dict[str, object]:
+        """Return privacy-safe fleet analytics from registry-only evidence."""
+        cameras = tuple(self.cameras.values())
+        model_distribution: dict[str, int] = {}
+        power_distribution: dict[str, int] = {}
+        platform_distribution: dict[str, int] = {}
+        domain_distribution: dict[str, int] = {}
+        capability_coverage: dict[str, int] = {}
+        attention: list[dict[str, object]] = []
+
+        for camera in cameras:
+            model = str(camera.model.value or "unknown")
+            model_distribution[model] = model_distribution.get(model, 0) + 1
+
+            power = camera.power_source
+            power_distribution[power] = power_distribution.get(power, 0) + 1
+
+            for platform in camera.source_platforms:
+                platform_distribution[platform] = (
+                    platform_distribution.get(platform, 0) + 1
+                )
+            for domain, count in camera.entity_domains.items():
+                domain_distribution[domain] = domain_distribution.get(domain, 0) + count
+            for capability in camera.capabilities:
+                capability_coverage[capability] = (
+                    capability_coverage.get(capability, 0) + 1
+                )
+
+            reasons: list[str] = []
+            if not camera.model.value:
+                reasons.append("model_unknown")
+            if camera.entity_count == 0:
+                reasons.append("no_entities")
+            if not camera.capabilities:
+                reasons.append("no_observed_capabilities")
+            if camera.health_score < 80:
+                reasons.append("low_evidence_completeness")
+            if reasons:
+                attention.append(
+                    {
+                        "identifier": camera.identifier,
+                        "name": camera.name,
+                        "health_score": camera.health_score,
+                        "reasons": reasons,
+                    }
+                )
+
+        average = self.average_camera_health
+        if self.last_discovery_error:
+            grade = "error"
+        elif not cameras:
+            grade = "empty"
+        elif average is not None and average >= 90 and not attention:
+            grade = "excellent"
+        elif average is not None and average >= 75:
+            grade = "good"
+        else:
+            grade = "attention"
+
+        camera_count = len(cameras)
+        coverage_percent = {
+            capability: round(count * 100 / camera_count)
+            for capability, count in sorted(capability_coverage.items())
+        } if camera_count else {}
+
+        return {
+            "grade": grade,
+            "camera_count": camera_count,
+            "average_camera_health": average,
+            "cameras_needing_attention": sorted(
+                attention, key=lambda item: str(item["identifier"])
+            ),
+            "model_distribution": dict(sorted(model_distribution.items())),
+            "power_distribution": dict(sorted(power_distribution.items())),
+            "platform_distribution": dict(sorted(platform_distribution.items())),
+            "entity_domain_distribution": dict(sorted(domain_distribution.items())),
+            "capability_coverage_percent": coverage_percent,
+            "observed_capability_count": self.capability_count,
+            "entity_count": self.entity_count,
+            "last_scan": (
+                None
+                if self.last_discovery_at is None
+                else self.last_discovery_at.isoformat()
+            ),
+            "scan_duration_ms": self.last_discovery_duration_ms,
+            "last_error": self.last_discovery_error,
+            "data_policy": (
+                "Registry-only analytics: no network polling and no camera wake-up."
+            ),
+        }
+
     @property
     def health_score(self) -> int:
         """Return a conservative runtime health score from observable state."""
