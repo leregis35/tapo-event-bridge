@@ -44,6 +44,69 @@ class TapoEventBridgeRuntime:
     last_person_lighting_trigger: dict[str, object] | None = None
     unmapped_person_event_count: int = 0
     last_unmapped_person_event: dict[str, object] | None = None
+    state_probe_enabled: bool = False
+    state_probe_limit: int = 100
+    state_probe_tracked_entity_count: int = 0
+    state_probe_entries: list[dict[str, object]] = field(default_factory=list)
+
+
+    @property
+    def state_probe_state(self) -> str:
+        """Return the current state of the opt-in diagnostic probe."""
+        if not self.state_probe_enabled:
+            return "disabled"
+        if self.state_probe_entries:
+            return "captured"
+        return "armed"
+
+    @property
+    def state_probe_report(self) -> dict[str, object]:
+        """Return a compact Recorder-safe report of recent HA state changes."""
+        by_camera: dict[str, int] = {}
+        by_domain: dict[str, int] = {}
+        for entry in self.state_probe_entries:
+            camera = str(
+                entry.get("camera_name") or entry.get("camera_id") or "unknown"
+            )
+            domain = str(entry.get("domain") or "unknown")
+            by_camera[camera] = by_camera.get(camera, 0) + 1
+            by_domain[domain] = by_domain.get(domain, 0) + 1
+        recent = self.state_probe_entries[-25:]
+        return {
+            "enabled": self.state_probe_enabled,
+            "tracked_entity_count": self.state_probe_tracked_entity_count,
+            "captured_change_count": len(self.state_probe_entries),
+            "by_camera": dict(sorted(by_camera.items())),
+            "by_domain": dict(sorted(by_domain.items())),
+            "latest_change": None if not recent else recent[-1],
+            "recent_changes": list(reversed(recent)),
+            "entries_truncated": len(self.state_probe_entries) > 25,
+            "data_policy": (
+                "Opt-in, bounded in-memory Home Assistant state changes only; "
+                "no network sniffing and no direct camera polling."
+            ),
+        }
+
+    def set_state_probe_enabled(self, enabled: bool) -> None:
+        """Arm or disarm the diagnostic state probe."""
+        self.state_probe_enabled = enabled
+        self._notify_listeners()
+
+    def set_state_probe_tracked_entity_count(self, count: int) -> None:
+        """Store how many camera entities are watched by the probe."""
+        self.state_probe_tracked_entity_count = max(0, count)
+        self._notify_listeners()
+
+    def add_state_probe_entry(self, entry: dict[str, object]) -> None:
+        """Append one bounded probe entry and notify entities."""
+        self.state_probe_entries.append(dict(entry))
+        del self.state_probe_entries[:-self.state_probe_limit]
+        self._notify_listeners()
+
+    def clear_state_probe(self) -> None:
+        """Clear probe observations without changing the armed state."""
+        self.state_probe_entries.clear()
+        self._notify_listeners()
 
     @property
     def cameras(self) -> dict[str, CameraDiagnostic]:

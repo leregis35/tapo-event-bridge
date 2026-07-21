@@ -125,6 +125,15 @@ class PersonLightingStatusSensor(BridgeSensor):
         return self._runtime.person_lighting_status
 
 
+class StateProbeSensor(BridgeSensor):
+    """Expose the opt-in Home Assistant state-change probe."""
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return a bounded diagnostic report."""
+        return self._runtime.state_probe_report
+
+
 class RuntimeMetricsSensor(BridgeSensor):
     """Expose lightweight runtime telemetry for production diagnostics."""
 
@@ -272,6 +281,12 @@ async def async_setup_entry(
                 lambda value: (
                     "enabled" if value.person_lighting_enabled else "disabled"
                 ),
+            ),
+            StateProbeSensor(
+                runtime,
+                entry_id,
+                "state_probe",
+                lambda value: value.state_probe_state,
             ),
             RuntimeMetricsSensor(
                 runtime,

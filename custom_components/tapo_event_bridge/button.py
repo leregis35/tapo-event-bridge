@@ -67,6 +67,22 @@ class ClearEventHistoryButton(TapoEventBridgeEntity, ButtonEntity):
         self._runtime.clear_events()
 
 
+class ClearStateProbeButton(TapoEventBridgeEntity, ButtonEntity):
+    """Clear the bounded in-memory diagnostic state probe."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_translation_key = "clear_state_probe"
+
+    @property
+    def available(self) -> bool:
+        """Return true when the probe contains captured changes."""
+        return bool(self._runtime.state_probe_entries)
+
+    async def async_press(self) -> None:
+        """Clear captured state changes."""
+        self._runtime.clear_state_probe()
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: TapoEventBridgeConfigEntry,
@@ -91,6 +107,11 @@ async def async_setup_entry(
                 runtime,
                 entry_id,
                 "clear_event_history",
+            ),
+            ClearStateProbeButton(
+                runtime,
+                entry_id,
+                "clear_state_probe",
             ),
         )
     )

@@ -37,6 +37,26 @@ class PersonLightingSwitch(TapoEventBridgeEntity, SwitchEntity):
         self._runtime.set_person_lighting_enabled(False)
 
 
+class StateProbeSwitch(TapoEventBridgeEntity, SwitchEntity):
+    """Arm the opt-in Home Assistant state-change diagnostic probe."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_translation_key = "state_probe"
+
+    @property
+    def is_on(self) -> bool:
+        """Return whether the state probe is armed."""
+        return self._runtime.state_probe_enabled
+
+    async def async_turn_on(self, **kwargs: object) -> None:
+        """Arm the state probe."""
+        self._runtime.set_state_probe_enabled(True)
+
+    async def async_turn_off(self, **kwargs: object) -> None:
+        """Disarm the state probe."""
+        self._runtime.set_state_probe_enabled(False)
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: TapoEventBridgeConfigEntry,
@@ -45,5 +65,8 @@ async def async_setup_entry(
     """Set up bridge configuration switches."""
     runtime: TapoEventBridgeRuntime = entry.runtime_data
     async_add_entities(
-        (PersonLightingSwitch(runtime, entry.entry_id, "person_lighting"),)
+        (
+            PersonLightingSwitch(runtime, entry.entry_id, "person_lighting"),
+            StateProbeSwitch(runtime, entry.entry_id, "state_probe"),
+        )
     )

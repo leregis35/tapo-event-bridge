@@ -9,6 +9,7 @@ from .discovery import async_discover_cameras
 from .ha_event_bridge import async_subscribe_home_assistant_events
 from .person_lighting import async_setup_person_lighting
 from .runtime import TapoEventBridgeRuntime
+from .state_probe import async_subscribe_state_probe
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -44,6 +45,7 @@ async def async_setup_entry(
         await async_subscribe_home_assistant_events(hass, runtime)
     )
     runtime.add_cleanup_callback(await async_setup_person_lighting(hass, runtime))
+    runtime.add_cleanup_callback(await async_subscribe_state_probe(hass, runtime))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 

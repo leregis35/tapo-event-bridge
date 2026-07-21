@@ -78,6 +78,9 @@
       },
       "last_event_summary": {
         "name": "Dernière détection détaillée"
+      },
+      "state_probe": {
+        "name": "Sonde de changements caméra"
       }
     },
     "binary_sensor": {
@@ -97,6 +100,9 @@
       },
       "clear_event_history": {
         "name": "Effacer l’historique des événements"
+      },
+      "clear_state_probe": {
+        "name": "Effacer la sonde de changements"
       }
     },
     "select": {
@@ -110,6 +116,9 @@
     "switch": {
       "person_lighting": {
         "name": "Éclairage sur détection humaine"
+      },
+      "state_probe": {
+        "name": "Mode diagnostic des changements"
       }
     },
     "number": {

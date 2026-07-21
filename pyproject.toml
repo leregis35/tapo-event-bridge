@@ -1,6 +1,6 @@
 [project]
 name = "tapo-event-bridge"
-version = "1.4.0"
+version = "1.5.0"
 description = "Home Assistant integration providing reliable Tapo camera events."
 readme = "README.md"
 requires-python = ">=3.13"

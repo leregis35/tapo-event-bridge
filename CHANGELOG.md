@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.0 - Camera State Probe
+
+- Added an opt-in, bounded Home Assistant state-change probe for discovered cameras.
+- Added exact camera, entity, domain, old state and new state diagnostics.
+- Added probe switch, report sensor and clear button.
+- No network sniffing, no camera polling and no forced battery-camera wake-up.
+
 ## 1.4.0 - Source Resolution Engine
 
 - Resolve every Home Assistant event to a readable camera name and model.
