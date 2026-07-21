@@ -81,6 +81,9 @@
       },
       "state_probe": {
         "name": "Camera state-change probe"
+      },
+      "data_path_probe": {
+        "name": "Camera data-path probe"
       }
     },
     "binary_sensor": {
@@ -103,6 +106,9 @@
       },
       "clear_state_probe": {
         "name": "Clear state-change probe"
+      },
+      "clear_data_path_probe": {
+        "name": "Clear camera data-path probe"
       }
     },
     "select": {
@@ -119,6 +125,9 @@
       },
       "state_probe": {
         "name": "State-change diagnostic mode"
+      },
+      "data_path_probe": {
+        "name": "Camera data-path instrumentation"
       }
     },
     "number": {

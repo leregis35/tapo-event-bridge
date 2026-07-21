@@ -2,14 +2,18 @@
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 from .const import EVENT_CAMERA, PLATFORMS
+from .data_path_probe import async_subscribe_data_path_probe
 from .discovery import async_discover_cameras
 from .ha_event_bridge import async_subscribe_home_assistant_events
 from .person_lighting import async_setup_person_lighting
 from .runtime import TapoEventBridgeRuntime
 from .state_probe import async_subscribe_state_probe
+
+_LOGGER = logging.getLogger(__package__)
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -23,6 +27,7 @@ async def async_setup_entry(
     entry: TapoEventBridgeConfigEntry,
 ) -> bool:
     """Set up Tapo Event Bridge from a config entry."""
+    _LOGGER.info("Starting Tapo Event Bridge setup: entry_id=%s", entry.entry_id)
     runtime = TapoEventBridgeRuntime()
     entry.runtime_data = runtime
 
@@ -41,12 +46,19 @@ async def async_setup_entry(
         runtime.fail_discovery(error)
         raise
     runtime.complete_discovery(cameras)
+    _LOGGER.info(
+        "Discovery completed: cameras=%d entities=%d",
+        len(runtime.cameras),
+        runtime.entity_count,
+    )
     runtime.add_cleanup_callback(
         await async_subscribe_home_assistant_events(hass, runtime)
     )
     runtime.add_cleanup_callback(await async_setup_person_lighting(hass, runtime))
     runtime.add_cleanup_callback(await async_subscribe_state_probe(hass, runtime))
+    runtime.add_cleanup_callback(await async_subscribe_data_path_probe(hass, runtime))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    _LOGGER.info("Tapo Event Bridge setup complete: platforms=%s", PLATFORMS)
     return True
 
 

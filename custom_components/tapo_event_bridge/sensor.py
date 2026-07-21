@@ -134,6 +134,14 @@ class StateProbeSensor(BridgeSensor):
         return self._runtime.state_probe_report
 
 
+class DataPathProbeSensor(BridgeSensor):
+    """Expose opt-in camera data-path instrumentation."""
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        return self._runtime.data_path_probe_report
+
+
 class RuntimeMetricsSensor(BridgeSensor):
     """Expose lightweight runtime telemetry for production diagnostics."""
 
@@ -287,6 +295,10 @@ async def async_setup_entry(
                 entry_id,
                 "state_probe",
                 lambda value: value.state_probe_state,
+            ),
+            DataPathProbeSensor(
+                runtime, entry_id, "data_path_probe",
+                lambda value: value.data_path_probe_state,
             ),
             RuntimeMetricsSensor(
                 runtime,

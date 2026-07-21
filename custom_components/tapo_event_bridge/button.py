@@ -75,12 +75,22 @@ class ClearStateProbeButton(TapoEventBridgeEntity, ButtonEntity):
 
     @property
     def available(self) -> bool:
-        """Return true when the probe contains captured changes."""
-        return bool(self._runtime.state_probe_entries)
+        """Keep the diagnostic action available even when the probe is empty."""
+        return True
 
     async def async_press(self) -> None:
         """Clear captured state changes."""
         self._runtime.clear_state_probe()
+
+
+class ClearDataPathProbeButton(TapoEventBridgeEntity, ButtonEntity):
+    """Clear bounded data-path observations."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_translation_key = "clear_data_path_probe"
+
+    async def async_press(self) -> None:
+        self._runtime.clear_data_path_probe()
 
 
 async def async_setup_entry(
@@ -109,9 +119,10 @@ async def async_setup_entry(
                 "clear_event_history",
             ),
             ClearStateProbeButton(
-                runtime,
-                entry_id,
-                "clear_state_probe",
+                runtime, entry_id, "clear_state_probe",
+            ),
+            ClearDataPathProbeButton(
+                runtime, entry_id, "clear_data_path_probe",
             ),
         )
     )

@@ -48,6 +48,62 @@ class TapoEventBridgeRuntime:
     state_probe_limit: int = 100
     state_probe_tracked_entity_count: int = 0
     state_probe_entries: list[dict[str, object]] = field(default_factory=list)
+    data_path_probe_enabled: bool = False
+    data_path_probe_limit: int = 100
+    data_path_tracked_entity_count: int = 0
+    data_path_entries: list[dict[str, object]] = field(default_factory=list)
+
+    @property
+    def data_path_probe_state(self) -> str:
+        if not self.data_path_probe_enabled:
+            return "disabled"
+        return "captured" if self.data_path_entries else "armed"
+
+    @property
+    def data_path_probe_report(self) -> dict[str, object]:
+        by_camera: dict[str, int] = {}
+        candidates = 0
+        for entry in self.data_path_entries:
+            camera = str(
+                entry.get("camera_name")
+                or entry.get("camera_id")
+                or "unknown"
+            )
+            by_camera[camera] = by_camera.get(camera, 0) + 1
+            if entry.get("candidate_tokens"):
+                candidates += 1
+        recent = self.data_path_entries[-25:]
+        return {
+            "enabled": self.data_path_probe_enabled,
+            "tracked_entity_count": self.data_path_tracked_entity_count,
+            "captured_update_count": len(self.data_path_entries),
+            "candidate_update_count": candidates,
+            "by_camera": dict(sorted(by_camera.items())),
+            "latest_update": None if not recent else recent[-1],
+            "recent_updates": list(reversed(recent)),
+            "entries_truncated": len(self.data_path_entries) > 25,
+            "data_policy": (
+                "Opt-in, bounded HA entity state/attribute diffs; no "
+                "credentials, network sniffing, or direct camera polling."
+            ),
+        }
+
+    def set_data_path_probe_enabled(self, enabled: bool) -> None:
+        self.data_path_probe_enabled = enabled
+        self._notify_listeners()
+
+    def set_data_path_tracked_entity_count(self, count: int) -> None:
+        self.data_path_tracked_entity_count = max(0, count)
+        self._notify_listeners()
+
+    def add_data_path_entry(self, entry: dict[str, object]) -> None:
+        self.data_path_entries.append(dict(entry))
+        del self.data_path_entries[:-self.data_path_probe_limit]
+        self._notify_listeners()
+
+    def clear_data_path_probe(self) -> None:
+        self.data_path_entries.clear()
+        self._notify_listeners()
 
 
     @property

@@ -57,6 +57,23 @@ class StateProbeSwitch(TapoEventBridgeEntity, SwitchEntity):
         self._runtime.set_state_probe_enabled(False)
 
 
+class DataPathProbeSwitch(TapoEventBridgeEntity, SwitchEntity):
+    """Enable bounded data-path instrumentation."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_translation_key = "data_path_probe"
+
+    @property
+    def is_on(self) -> bool:
+        return self._runtime.data_path_probe_enabled
+
+    async def async_turn_on(self, **kwargs: object) -> None:
+        self._runtime.set_data_path_probe_enabled(True)
+
+    async def async_turn_off(self, **kwargs: object) -> None:
+        self._runtime.set_data_path_probe_enabled(False)
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: TapoEventBridgeConfigEntry,
@@ -68,5 +85,6 @@ async def async_setup_entry(
         (
             PersonLightingSwitch(runtime, entry.entry_id, "person_lighting"),
             StateProbeSwitch(runtime, entry.entry_id, "state_probe"),
+            DataPathProbeSwitch(runtime, entry.entry_id, "data_path_probe"),
         )
     )

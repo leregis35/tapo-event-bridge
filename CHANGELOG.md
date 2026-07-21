@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.0
+- Added opt-in camera data-path instrumentation with state and safe attribute diffs.
+- Added explicit integration startup/discovery logging.
+- Added candidate tagging for detection-related updates.
+- Kept diagnostic clear actions available when buffers are empty.
+
 ## 1.5.0 - Camera State Probe
 
 - Added an opt-in, bounded Home Assistant state-change probe for discovered cameras.
