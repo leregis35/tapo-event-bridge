@@ -26,3 +26,31 @@ def test_build_data_path_entry_ignores_identical_update() -> None:
         old_attributes={"unit_of_measurement": "dBm"},
         new_attributes={"unit_of_measurement": "dBm"},
     ) is None
+
+
+def test_entity_name_does_not_create_false_candidate() -> None:
+    entry = build_data_path_entry(
+        camera_id="camera-test",
+        camera_name="Bridge",
+        entity_id="sensor.tapo_event_bridge_person_event_metrics",
+        old_state="10",
+        new_state="11",
+        old_attributes={},
+        new_attributes={},
+    )
+    assert entry is not None
+    assert entry["candidate_tokens"] == []
+
+
+def test_candidate_can_come_from_changed_attribute_key() -> None:
+    entry = build_data_path_entry(
+        camera_id="camera-test",
+        camera_name="Carport",
+        entity_id="sensor.carport_status",
+        old_state="idle",
+        new_state="idle",
+        old_attributes={"person_detected": False},
+        new_attributes={"person_detected": True},
+    )
+    assert entry is not None
+    assert "person" in entry["candidate_tokens"]

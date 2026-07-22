@@ -62,6 +62,7 @@ class TapoEventBridgeRuntime:
     @property
     def data_path_probe_report(self) -> dict[str, object]:
         by_camera: dict[str, int] = {}
+        candidate_by_camera: dict[str, int] = {}
         candidates = 0
         for entry in self.data_path_entries:
             camera = str(
@@ -72,6 +73,7 @@ class TapoEventBridgeRuntime:
             by_camera[camera] = by_camera.get(camera, 0) + 1
             if entry.get("candidate_tokens"):
                 candidates += 1
+                candidate_by_camera[camera] = candidate_by_camera.get(camera, 0) + 1
         recent = self.data_path_entries[-25:]
         return {
             "enabled": self.data_path_probe_enabled,
@@ -79,6 +81,12 @@ class TapoEventBridgeRuntime:
             "captured_update_count": len(self.data_path_entries),
             "candidate_update_count": candidates,
             "by_camera": dict(sorted(by_camera.items())),
+            "candidate_by_camera": dict(sorted(candidate_by_camera.items())),
+            "signal_verdict": (
+                "candidate_camera_signal_observed"
+                if candidate_by_camera
+                else "no_candidate_camera_signal_observed"
+            ),
             "latest_update": None if not recent else recent[-1],
             "recent_updates": list(reversed(recent)),
             "entries_truncated": len(self.data_path_entries) > 25,

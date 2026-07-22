@@ -1,3 +1,9 @@
+## 1.6.1 — Signal Integrity
+
+- Camera-only data-path filtering.
+- Removed entity-name candidate false positives.
+- Added per-camera candidate counts and signal verdict.
+
 # Changelog
 
 ## 1.6.0

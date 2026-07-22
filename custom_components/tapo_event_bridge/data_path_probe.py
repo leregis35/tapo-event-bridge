@@ -60,7 +60,12 @@ def build_data_path_entry(
     }
     if old_state == new_state and not changed_attributes:
         return None
-    searchable = " ".join((entity_id, str(new_state), str(new_safe))).casefold()
+    # Candidate matching deliberately excludes entity_id. Integration and entity
+    # names often contain words such as "event" or "person", which created
+    # false positives without any event-bearing value changing.
+    searchable = " ".join(
+        (str(new_state), str(new_safe), str(changed_attributes))
+    ).casefold()
     candidate_tokens = sorted(
         {token for token in _CANDIDATE_TOKENS if token in searchable}
     )
@@ -93,6 +98,11 @@ async def async_subscribe_data_path_probe(
     by_platform: dict[str, int] = {}
     for entity in registry.entities.values():
         if entity.disabled or entity.device_id is None:
+            continue
+        # The probe is about the camera integration data path, not every Home
+        # Assistant device accidentally discovered by broad heuristics. Restrict
+        # observation to entities actually provided by Tapo: Cameras Control.
+        if entity.platform != "tapo_control":
             continue
         camera_id = privacy_safe_identifier(entity.device_id)
         if camera_id not in known_camera_ids:
